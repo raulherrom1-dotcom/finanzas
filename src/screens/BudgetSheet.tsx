@@ -3,13 +3,12 @@ import { Sparkles } from 'lucide-react'
 import { Sheet } from '../components/ui/Sheet'
 import { Button } from '../components/ui/Button'
 import { Field, MoneyInput } from '../components/ui/Form'
-import { CategoryIcon } from '../components/ui/CategoryIcon'
+import { CategoryChips } from '../components/CategoryChips'
 import { setBudget } from '../db/actions'
 import type { Category } from '../db/types'
 import { useApp } from '../state/app'
 import { monthLabel, type MonthKey } from '../lib/dates'
 import { formatMXN } from '../lib/money'
-import { cn } from '../lib/cn'
 
 export type BudgetTarget = { kind: 'total' } | { kind: 'category'; category?: Category }
 
@@ -89,33 +88,16 @@ function BudgetForm({
       {pickCategory && (
         <div className="mb-5">
           <p className="mb-2 text-sm font-bold">Categoría</p>
-          <div className="flex flex-wrap gap-2">
-            {categories
-              .filter((c) => c.kind === 'expense' && !c.archived)
-              .map((c) => {
-                const on = c.id === categoryId
-                const has = current(c.id) !== null
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    disabled={has}
-                    onClick={() => {
-                      setCategoryId(c.id)
-                      setAmount(null)
-                      setInputKey((k) => k + 1)
-                    }}
-                    className={cn(
-                      'flex h-10 items-center gap-1.5 rounded-full border pr-3.5 pl-1 text-sm font-semibold disabled:opacity-40',
-                      on ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface',
-                    )}
-                  >
-                    <CategoryIcon icon={c.icon} color={c.color} size={30} />
-                    {c.name}
-                  </button>
-                )
-              })}
-          </div>
+          <CategoryChips
+            categories={categories.filter((c) => c.kind === 'expense' && !c.archived)}
+            isSelected={(c) => c.id === categoryId}
+            isDisabled={(c) => current(c.id) !== null}
+            onPick={(c) => {
+              setCategoryId(c.id)
+              setAmount(null)
+              setInputKey((k) => k + 1)
+            }}
+          />
         </div>
       )}
 

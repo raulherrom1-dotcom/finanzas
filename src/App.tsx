@@ -7,6 +7,8 @@ import { QuickAddSheet } from './features/quick-add/QuickAddSheet'
 import { ScreenHeader } from './components/ui/ScreenHeader'
 import { EmptyState } from './components/ui/Callout'
 import { useRoute } from './lib/router'
+import { useApp } from './state/app'
+import { runRecurring } from './db/recurring'
 import { Inicio } from './screens/Inicio'
 import { Movimientos } from './screens/Movimientos'
 import { Presupuesto } from './screens/Presupuesto'
@@ -15,6 +17,8 @@ import { Ajustes } from './screens/ajustes/Ajustes'
 import { Cuentas } from './screens/ajustes/Cuentas'
 import { Categorias } from './screens/ajustes/Categorias'
 import { Perfil } from './screens/ajustes/Perfil'
+import { Recurrentes } from './screens/ajustes/Recurrentes'
+import { Metas } from './screens/ajustes/Metas'
 
 function screenFor(path: string): ReactNode {
   if (path === '/') return <Inicio />
@@ -25,6 +29,8 @@ function screenFor(path: string): ReactNode {
   if (path === '/ajustes/cuentas') return <Cuentas />
   if (path === '/ajustes/categorias') return <Categorias />
   if (path === '/ajustes/perfil') return <Perfil />
+  if (path === '/ajustes/recurrentes') return <Recurrentes />
+  if (path === '/ajustes/metas') return <Metas />
   if (path.startsWith('/ajustes/')) return <Pending />
   return <Inicio />
 }
@@ -43,6 +49,19 @@ function Pending() {
 export default function App() {
   const path = useRoute()
   const main = useRef<HTMLElement>(null)
+  const { showToast } = useApp()
+
+  // Recurrentes: se generan al abrir la app y cada vez que vuelve al frente.
+  useEffect(() => {
+    const run = () =>
+      runRecurring()
+        .then((n) => n > 0 && showToast(n === 1 ? 'Se registró 1 movimiento recurrente' : `Se registraron ${n} movimientos recurrentes`, { tone: 'info' }))
+        .catch(() => {})
+    run()
+    const onVisible = () => document.visibilityState === 'visible' && run()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [showToast])
 
   useEffect(() => {
     main.current?.scrollTo({ top: 0 })

@@ -8,7 +8,7 @@ import { MonthSwitcher } from '../components/MonthSwitcher'
 import { TxRow } from '../components/TxRow'
 import { Sheet } from '../components/ui/Sheet'
 import { Segmented } from '../components/ui/Form'
-import { CategoryIcon } from '../components/ui/CategoryIcon'
+import { CategoryChips } from '../components/CategoryChips'
 import { useApp } from '../state/app'
 import { byId, useAccounts, useCategories, useTransactionsBetween } from '../db/queries'
 import { db } from '../db/db'
@@ -337,24 +337,12 @@ function FiltersSheet({
       />
 
       <p className="mb-2 text-sm font-bold">Categorías</p>
-      <div className="mb-5 flex flex-wrap gap-2">
-        {categories
-          .filter((c) => f.type === 'all' || f.type === c.kind)
-          .map((c) => {
-            const on = f.categoryIds.includes(c.id)
-            return (
-              <button
-                key={c.id}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggleIn('categoryIds', c.id)}
-                className={cn('flex h-10 items-center gap-1.5 rounded-full border pr-3.5 pl-1 text-sm font-semibold', on ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface')}
-              >
-                <CategoryIcon icon={c.icon} color={c.color} size={30} />
-                {c.name}
-              </button>
-            )
-          })}
+      <div className="mb-5">
+        <CategoryChips
+          categories={categories.filter((c) => f.type === 'all' || f.type === c.kind)}
+          isSelected={(c) => f.categoryIds.includes(c.id)}
+          onPick={(c) => toggleIn('categoryIds', c.id)}
+        />
       </div>
 
       <p className="mb-2 text-sm font-bold">Cuentas</p>
