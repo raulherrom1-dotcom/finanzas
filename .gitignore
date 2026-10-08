@@ -1,0 +1,12 @@
+node_modules
+dist
+dev-dist
+*.local
+*.log
+.DS_Store
+.claude/
+
+# Respaldos y exportaciones personales: tus datos viven solo en el celular, nunca en el repo
+finanzas-*.json
+*.csv
+!src/**/__fixtures__/*.csv
