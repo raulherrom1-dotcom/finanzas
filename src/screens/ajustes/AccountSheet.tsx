@@ -9,7 +9,7 @@ import { ACCOUNT_COLORS, ACCOUNT_ICON } from '../../db/defaults'
 import { accountUsage, removeAccount, saveAccount } from '../../db/actions'
 import type { Account, AccountType } from '../../db/types'
 import { useApp } from '../../state/app'
-import { formatMXN } from '../../lib/money'
+import { useMoney } from '../../components/ui/Amount'
 
 const TYPES: Array<{ value: AccountType; label: string }> = [
   { value: 'cash', label: 'Efectivo' },
@@ -29,6 +29,7 @@ export function AccountSheet({ open, account, currentBalance, onClose }: { open:
 
 function AccountForm({ account, currentBalance, onClose }: { account?: Account; currentBalance?: number; onClose: () => void }) {
   const { showToast } = useApp()
+  const money = useMoney()
   const [name, setName] = useState(account?.name ?? '')
   const [type, setType] = useState<AccountType>(account?.type ?? 'debit')
   const [color, setColor] = useState(account?.color ?? ACCOUNT_COLORS[0])
@@ -96,7 +97,7 @@ function AccountForm({ account, currentBalance, onClose }: { account?: Account; 
         label={isCredit ? 'Deuda actual' : account ? 'Saldo inicial' : 'Saldo actual'}
         hint={
           account
-            ? `Saldo antes de tu primer movimiento registrado. Hoy tienes ${formatMXN(currentBalance ?? 0)}.`
+            ? `Saldo antes de tu primer movimiento registrado. Hoy tienes ${money(currentBalance ?? 0)}.`
             : isCredit
               ? 'Lo que debes hoy en la tarjeta. Si no debes nada, déjalo en 0.'
               : 'Lo que tienes hoy en esta cuenta.'

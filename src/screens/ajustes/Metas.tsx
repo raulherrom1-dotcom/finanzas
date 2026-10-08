@@ -180,7 +180,7 @@ function GoalDetail({ view, onContribute, onEdit, onDeleted }: { view: GoalView;
       <div className="mb-4 flex items-center gap-4">
         <CategoryIcon icon={view.goal.icon} color={view.goal.color} size={56} />
         <div className="min-w-0 flex-1">
-          <Amount cents={view.saved} className="block text-xl font-extrabold tracking-tight" />
+          <Amount cents={view.saved} proportional className="block text-xl font-extrabold tracking-tight" />
           <p className="text-sm text-muted">de {money(view.goal.target)}</p>
         </div>
         <span className="num text-xl font-extrabold text-accent-press">{Math.floor(view.pct)}%</span>

@@ -28,10 +28,17 @@ import {
 } from '../lib/filters'
 import { currentMonth, dayLabel, todayISO } from '../lib/dates'
 import { cn } from '../lib/cn'
+import { navigate } from '../lib/router'
 import type { TxType } from '../db/types'
 
 // Los filtros se recuerdan mientras la app está abierta.
 let remembered: TxFilters = DEFAULT_FILTERS
+
+/** Abre Movimientos con filtros ya puestos (por ejemplo, desde una gráfica). */
+export function openMovimientos(filters: Partial<TxFilters>) {
+  remembered = { ...DEFAULT_FILTERS, ...filters }
+  navigate('/movimientos')
+}
 
 const PAGE = 120
 

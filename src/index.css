@@ -152,9 +152,12 @@
     display: none;
   }
 
+  /* Cifras tabulares para columnas y listas; proporcionales para montos grandes y solos. */
   .num {
     font-variant-numeric: tabular-nums lining-nums;
-    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+  .num-prop {
+    font-variant-numeric: proportional-nums lining-nums;
   }
 
   .card {

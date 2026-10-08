@@ -61,9 +61,9 @@ export async function loadSampleData(): Promise<void> {
 
   // Recurrentes y sus ocurrencias pasadas
   const recDefs: Array<Omit<Recurring, 'id' | 'nextDate' | 'createdAt' | 'active' | 'sample' | 'startDate'> & { id: string; day: number }> = [
-    { id: 'sample-rec-sueldo', name: 'Sueldo practicante', type: 'income', amount: pesos(9500), categoryId: 'cat-sueldo', accountId: 'sample-debito', frequency: 'monthly', day: 10 },
+    { id: 'sample-rec-sueldo', name: 'Sueldo practicante', type: 'income', amount: pesos(12000), categoryId: 'cat-sueldo', accountId: 'sample-debito', frequency: 'monthly', day: 10 },
     { id: 'sample-rec-beca', name: 'Beca', type: 'income', amount: pesos(1800), categoryId: 'cat-beca', accountId: 'sample-debito', frequency: 'monthly', day: 20 },
-    { id: 'sample-rec-renta', name: 'Renta del cuarto', type: 'expense', amount: pesos(3200), categoryId: 'cat-hogar', accountId: 'sample-debito', frequency: 'monthly', day: 1 },
+    { id: 'sample-rec-renta', name: 'Renta del cuarto', type: 'expense', amount: pesos(2800), categoryId: 'cat-hogar', accountId: 'sample-debito', frequency: 'monthly', day: 1 },
     { id: 'sample-rec-gym', name: 'Gym', type: 'expense', amount: pesos(499), categoryId: 'cat-gym', accountId: 'sample-debito', frequency: 'monthly', day: 5 },
     { id: 'sample-rec-celular', name: 'Plan de celular', type: 'expense', amount: pesos(249), categoryId: 'cat-celular', accountId: 'sample-tdc', frequency: 'monthly', day: 12 },
     { id: 'sample-rec-spotify', name: 'Spotify', type: 'expense', amount: pesos(129), categoryId: 'cat-suscripciones', accountId: 'sample-tdc', frequency: 'monthly', day: 15 },
@@ -96,14 +96,14 @@ export async function loadSampleData(): Promise<void> {
     const dow = weekday(d) // 0 lunes … 6 domingo
     const day = Number(d.slice(8, 10))
 
-    const meals = r() < 0.75 ? (r() < 0.35 ? 2 : 1) : 0
-    for (let i = 0; i < meals; i++) add({ type: 'expense', amount: pesos(Math.round(rand(55, 240))), date: d, categoryId: 'cat-comida', note: pick(comida), ...payWith() })
+    const meals = r() < 0.62 ? (r() < 0.3 ? 2 : 1) : 0
+    for (let i = 0; i < meals; i++) add({ type: 'expense', amount: pesos(Math.round(rand(45, 185))), date: d, categoryId: 'cat-comida', note: pick(comida), ...payWith() })
     if (dow < 5 && r() < 0.8) add({ type: 'expense', amount: pesos(Math.round(rand(18, 140))), date: d, categoryId: 'cat-transporte', note: pick(transporte), ...payWith() })
     if (dow === 5) {
       const card = r() < 0.5
-      add({ type: 'expense', amount: pesos(Math.round(rand(420, 980)) + 0.5), date: d, categoryId: 'cat-super', note: pick(['Súper', 'Walmart', 'Mercado', undefined]), accountId: card ? 'sample-tdc' : 'sample-debito', method: card ? 'credit' : 'debit' })
+      add({ type: 'expense', amount: pesos(Math.round(rand(340, 760)) + 0.5), date: d, categoryId: 'cat-super', note: pick(['Súper', 'Walmart', 'Mercado', undefined]), accountId: card ? 'sample-tdc' : 'sample-debito', method: card ? 'credit' : 'debit' })
     }
-    if (r() < 0.14) add({ type: 'expense', amount: pesos(Math.round(rand(150, 620))), date: d, categoryId: 'cat-ocio', note: pick(ocio), ...payWith() })
+    if (r() < 0.1) add({ type: 'expense', amount: pesos(Math.round(rand(150, 560))), date: d, categoryId: 'cat-ocio', note: pick(ocio), ...payWith() })
     if (dow < 5 && r() < 0.07) add({ type: 'expense', amount: pesos(Math.round(rand(35, 340))), date: d, categoryId: 'cat-escuela', note: pick(escuela), ...payWith() })
     if (r() < 0.035) add({ type: 'expense', amount: pesos(Math.round(rand(120, 580))), date: d, categoryId: 'cat-salud', note: pick(salud), ...payWith() })
     if (r() < 0.02) add({ type: 'expense', amount: pesos(Math.round(rand(320, 890))), date: d, categoryId: 'cat-ropa', accountId: 'sample-tdc', method: 'credit' })
@@ -118,10 +118,10 @@ export async function loadSampleData(): Promise<void> {
 
   const budgets: Budget[] = (
     [
-      ['total', 11500],
-      ['cat-comida', 3200],
+      ['total', 12000],
+      ['cat-comida', 2800],
       ['cat-transporte', 1300],
-      ['cat-super', 2600],
+      ['cat-super', 2200],
       ['cat-ocio', 900],
       ['cat-suscripciones', 400],
       ['cat-escuela', 500],

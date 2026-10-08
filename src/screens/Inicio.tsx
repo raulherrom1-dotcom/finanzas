@@ -64,7 +64,7 @@ export function Inicio() {
         <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance de ${monthName(month)}`}>
           <HeroGlyph />
           <p className="relative text-sm font-semibold">Balance de {monthName(month)}</p>
-          <Amount cents={totals.balance} className="relative mt-1 block text-2xl font-extrabold tracking-tight" />
+          <Amount cents={totals.balance} proportional className="relative mt-1 block text-2xl font-extrabold tracking-tight" />
 
           <div className="relative mt-4 grid grid-cols-2 gap-2">
             <HeroStat icon={ArrowDownLeft} label="Entró" cents={totals.income} />

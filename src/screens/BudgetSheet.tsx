@@ -8,7 +8,7 @@ import { setBudget } from '../db/actions'
 import type { Category } from '../db/types'
 import { useApp } from '../state/app'
 import { monthLabel, type MonthKey } from '../lib/dates'
-import { formatMXN } from '../lib/money'
+import { useMoney } from '../components/ui/Amount'
 
 export type BudgetTarget = { kind: 'total' } | { kind: 'category'; category?: Category }
 
@@ -62,6 +62,7 @@ function BudgetForm({
   onClose: () => void
 }) {
   const { showToast } = useApp()
+  const money = useMoney()
   const [categoryId, setCategoryId] = useState<string | undefined>(target.kind === 'total' ? 'total' : target.category?.id)
   const existing = categoryId ? current(categoryId) : null
   const [amount, setAmount] = useState<number | null>(existing)
@@ -119,8 +120,8 @@ function BudgetForm({
             >
               <Sparkles size={20} className="shrink-0" />
               <span className="flex-1 text-sm">
-                En los últimos meses gastaste en promedio <strong>{formatMXN(avg)}</strong> al mes.
-                <span className="mt-0.5 block font-bold">Usar {formatMXN(Math.ceil(avg / 10000) * 10000, { noCents: true })}</span>
+                En los últimos meses gastaste en promedio <strong>{money(avg)}</strong> al mes.
+                <span className="mt-0.5 block font-bold">Usar {money(Math.ceil(avg / 10000) * 10000, { noCents: true })}</span>
               </span>
             </button>
           )}

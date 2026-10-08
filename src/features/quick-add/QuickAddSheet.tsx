@@ -278,7 +278,7 @@ function QuickAddForm({ req, onDone }: { req: NonNullable<QuickAddRequest>; onDo
             <Check size={32} strokeWidth={3} />
           </span>
         ) : (
-          <p className={cn('num leading-none font-extrabold tracking-tight', whole.length > 9 ? 'text-[36px]' : 'text-[44px]', amountColor)} aria-label={`Monto ${formatMXN(cents)}`}>
+          <p className={cn('num-prop leading-none font-extrabold tracking-tight', whole.length > 9 ? 'text-[36px]' : 'text-[44px]', amountColor)} aria-label={`Monto ${formatMXN(cents)}`}>
             ${whole}
             {dec !== undefined && <span className="text-[0.6em]">.{dec}</span>}
           </p>

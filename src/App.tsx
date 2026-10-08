@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react'
 import { Construction } from 'lucide-react'
 import { BottomNav } from './components/nav/BottomNav'
 import { Toaster } from './components/ui/Toast'
@@ -12,13 +12,15 @@ import { runRecurring } from './db/recurring'
 import { Inicio } from './screens/Inicio'
 import { Movimientos } from './screens/Movimientos'
 import { Presupuesto } from './screens/Presupuesto'
-import { Analisis } from './screens/Analisis'
 import { Ajustes } from './screens/ajustes/Ajustes'
 import { Cuentas } from './screens/ajustes/Cuentas'
 import { Categorias } from './screens/ajustes/Categorias'
 import { Perfil } from './screens/ajustes/Perfil'
 import { Recurrentes } from './screens/ajustes/Recurrentes'
 import { Metas } from './screens/ajustes/Metas'
+
+// Las gráficas (Recharts) se cargan aparte para que la app abra más rápido.
+const Analisis = lazy(() => import('./screens/Analisis').then((m) => ({ default: m.Analisis })))
 
 function screenFor(path: string): ReactNode {
   if (path === '/') return <Inicio />
@@ -71,7 +73,7 @@ export default function App() {
     <>
       <main ref={main} className="scroll-area relative flex-1">
         <div key={path} className="animate-screen-in pb-8">
-          {screenFor(path)}
+          <Suspense fallback={null}>{screenFor(path)}</Suspense>
         </div>
       </main>
       <BottomNav />

@@ -171,7 +171,7 @@ function TotalCard({ total, month, onEdit }: { total: TotalBudget; month: string
         </ProgressRing>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted">{over ? 'Te pasaste por' : 'Te quedan'}</p>
-          <Amount cents={Math.abs(total.remaining)} tone={over ? 'neg' : 'ink'} className="block text-xl font-extrabold tracking-tight" />
+          <Amount cents={Math.abs(total.remaining)} proportional tone={over ? 'neg' : 'ink'} className="block text-xl font-extrabold tracking-tight" />
           <p className="mt-1 text-sm text-muted">
             Gastaste {money(total.spent)} de {money(total.budget)}
           </p>

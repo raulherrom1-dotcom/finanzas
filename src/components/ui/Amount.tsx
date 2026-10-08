@@ -25,6 +25,7 @@ export function Amount({
   centsClassName,
   hideCents,
   ignorePrivacy,
+  proportional,
 }: {
   cents: number
   sign?: boolean
@@ -33,18 +34,20 @@ export function Amount({
   centsClassName?: string
   hideCents?: boolean
   ignorePrivacy?: boolean
+  /** Cifras proporcionales para montos grandes y solos; tabulares (por defecto) para listas. */
+  proportional?: boolean
 }) {
   const { privacy } = useApp()
   if (privacy && !ignorePrivacy) {
     return (
-      <span className={cn('num whitespace-nowrap', TONE[tone], className)} aria-label="Monto oculto">
+      <span className={cn(proportional ? 'num-prop' : 'num', 'whitespace-nowrap', TONE[tone], className)} aria-label="Monto oculto">
         $<span className="tracking-[0.12em]">•••</span>
       </span>
     )
   }
   const p = splitMXN(cents, { sign })
   return (
-    <span className={cn('num whitespace-nowrap', TONE[tone], className)} aria-label={formatMXN(cents, { sign })}>
+    <span className={cn(proportional ? 'num-prop' : 'num', 'whitespace-nowrap', TONE[tone], className)} aria-label={formatMXN(cents, { sign })}>
       <span aria-hidden>
         {p.sign}
         {p.whole}
