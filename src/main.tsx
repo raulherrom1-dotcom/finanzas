@@ -7,6 +7,11 @@ import { requestPersistentStorage } from './lib/storage'
 
 requestPersistentStorage()
 
+// Solo en desarrollo: atajos para probar con datos de ejemplo desde la consola.
+if (import.meta.env.DEV) {
+  import('./db/sample').then((m) => Object.assign(window, { __sample: m }))
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppProvider>
