@@ -26,7 +26,7 @@ export function CategoryChips({
             disabled={isDisabled?.(c)}
             onClick={() => onPick(c)}
             className={cn(
-              'flex h-10 items-center gap-1.5 rounded-full border pr-3.5 pl-1 text-sm font-semibold disabled:opacity-40',
+              'flex h-11 items-center gap-1.5 rounded-full border pr-3.5 pl-1 text-sm font-semibold disabled:opacity-40',
               on ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface text-ink',
             )}
           >

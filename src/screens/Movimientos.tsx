@@ -234,7 +234,7 @@ function ActiveChips({
           type="button"
           onClick={c.clear}
           aria-label={`Quitar filtro ${c.label}`}
-          className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-accent-soft pr-2.5 pl-3.5 text-sm font-bold text-accent-press"
+          className="flex h-11 shrink-0 items-center gap-1 rounded-full bg-accent-soft pr-2.5 pl-3.5 text-sm font-bold text-accent-press"
         >
           {c.label}
           <X size={15} strokeWidth={2.6} />
@@ -293,7 +293,7 @@ function FiltersSheet({
               key={p.label}
               type="button"
               onClick={() => set({ period: p.period })}
-              className={cn('h-10 rounded-full border px-4 text-sm font-bold', on ? 'border-transparent bg-accent text-white' : 'border-line bg-surface text-ink')}
+              className={cn('h-11 rounded-full border px-4 text-sm font-bold', on ? 'border-transparent bg-accent text-white' : 'border-line bg-surface text-ink')}
             >
               {p.label}
             </button>
@@ -362,7 +362,7 @@ function FiltersSheet({
               type="button"
               aria-pressed={on}
               onClick={() => toggleIn('accountIds', a.id)}
-              className={cn('h-10 rounded-full border px-4 text-sm font-semibold', on ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface')}
+              className={cn('h-11 rounded-full border px-4 text-sm font-semibold', on ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface')}
             >
               {a.name}
             </button>

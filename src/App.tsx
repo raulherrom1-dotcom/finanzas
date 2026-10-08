@@ -1,11 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react'
-import { Construction } from 'lucide-react'
 import { BottomNav } from './components/nav/BottomNav'
 import { Toaster } from './components/ui/Toast'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { QuickAddSheet } from './features/quick-add/QuickAddSheet'
-import { ScreenHeader } from './components/ui/ScreenHeader'
-import { EmptyState } from './components/ui/Callout'
 import { useRoute } from './lib/router'
 import { useApp } from './state/app'
 import { runRecurring } from './db/recurring'
@@ -18,6 +15,8 @@ import { Categorias } from './screens/ajustes/Categorias'
 import { Perfil } from './screens/ajustes/Perfil'
 import { Recurrentes } from './screens/ajustes/Recurrentes'
 import { Metas } from './screens/ajustes/Metas'
+import { Respaldo } from './screens/ajustes/Respaldo'
+import { ImportarCsv } from './screens/ajustes/ImportarCsv'
 
 // Las gráficas (Recharts) se cargan aparte para que la app abra más rápido.
 const Analisis = lazy(() => import('./screens/Analisis').then((m) => ({ default: m.Analisis })))
@@ -33,19 +32,10 @@ function screenFor(path: string): ReactNode {
   if (path === '/ajustes/perfil') return <Perfil />
   if (path === '/ajustes/recurrentes') return <Recurrentes />
   if (path === '/ajustes/metas') return <Metas />
-  if (path.startsWith('/ajustes/')) return <Pending />
+  if (path === '/ajustes/respaldo') return <Respaldo />
+  if (path === '/ajustes/importar') return <ImportarCsv />
+  if (path.startsWith('/ajustes')) return <Ajustes />
   return <Inicio />
-}
-
-function Pending() {
-  return (
-    <>
-      <ScreenHeader title="Próximamente" back="/ajustes" />
-      <div className="px-4">
-        <EmptyState icon={Construction} title="Esta sección llega en una siguiente fase" />
-      </div>
-    </>
-  )
 }
 
 export default function App() {

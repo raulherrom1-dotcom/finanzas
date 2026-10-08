@@ -256,7 +256,7 @@ function QuickAddForm({ req, onDone }: { req: NonNullable<QuickAddRequest>; onDo
           <span>Retomaste un registro sin guardar.</span>
           <button
             type="button"
-            className="min-h-8 px-1 font-bold text-accent-press"
+            className="min-h-11 px-2 font-bold text-accent-press"
             onClick={() => {
               clearDraft()
               setRestored(false)

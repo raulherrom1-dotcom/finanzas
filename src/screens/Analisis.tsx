@@ -139,7 +139,7 @@ export function Analisis() {
                         <button
                           type="button"
                           onClick={() => openMovimientos({ period: { kind: 'month', month }, categoryIds: s.categoryIds, type: 'expense' })}
-                          className="mb-1 ml-8 flex min-h-10 items-center gap-1 text-sm font-bold text-accent-press"
+                          className="mb-1 ml-8 flex min-h-11 items-center gap-1 text-sm font-bold text-accent-press"
                         >
                           Ver movimientos
                           <ChevronRight size={16} />

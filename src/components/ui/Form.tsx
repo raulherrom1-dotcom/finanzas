@@ -97,7 +97,7 @@ export function Segmented<T extends string>({
             className={cn(
               'flex min-w-0 items-center justify-center rounded-full font-bold transition-[background-color,color,box-shadow] duration-200',
               fit ? 'flex-auto px-3' : 'flex-1 px-2',
-              size === 'md' ? 'h-10 text-sm' : 'h-9 text-[13px]',
+              size === 'md' ? 'h-11 text-sm' : 'h-11 text-[13px]',
               on ? 'bg-bg text-accent-press shadow-card' : 'text-muted active:text-ink',
             )}
           >

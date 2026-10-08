@@ -296,12 +296,12 @@ function ContributeForm({ view, onClose, onCompleted }: { view: GoalView; onClos
       {mode === 'in' && (
         <div className="-mt-1 mb-4 flex flex-wrap gap-2">
           {quick.map((q) => (
-            <button key={q} type="button" onClick={() => pick(q)} className="h-10 rounded-full border border-line bg-surface px-4 text-sm font-bold">
+            <button key={q} type="button" onClick={() => pick(q)} className="h-11 rounded-full border border-line bg-surface px-4 text-sm font-bold">
               {money(q, { noCents: true })}
             </button>
           ))}
           {view.remaining > 0 && (
-            <button type="button" onClick={() => pick(view.remaining)} className="h-10 rounded-full bg-accent-soft px-4 text-sm font-bold text-accent-press">
+            <button type="button" onClick={() => pick(view.remaining)} className="h-11 rounded-full bg-accent-soft px-4 text-sm font-bold text-accent-press">
               Lo que falta
             </button>
           )}

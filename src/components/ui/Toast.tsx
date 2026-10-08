@@ -32,7 +32,7 @@ export function Toaster() {
         {toast.action && (
           <button
             type="button"
-            className="h-10 rounded-full bg-white/15 px-4 font-bold text-white active:bg-white/25"
+            className="h-11 rounded-full bg-white/15 px-4 font-bold text-white active:bg-white/25"
             onClick={() => {
               toast.action?.run()
               dismissToast()

@@ -324,7 +324,7 @@ function AccountChips({ accounts, value, onChange }: { accounts: Array<{ id: str
           type="button"
           aria-pressed={a.id === value}
           onClick={() => onChange(a.id)}
-          className={cn('h-10 rounded-full border px-4 text-sm font-semibold', a.id === value ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface')}
+          className={cn('h-11 rounded-full border px-4 text-sm font-semibold', a.id === value ? 'border-accent bg-accent-soft text-accent-press' : 'border-line bg-surface')}
         >
           {a.name}
         </button>

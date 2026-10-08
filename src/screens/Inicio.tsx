@@ -18,6 +18,7 @@ import { monthSavings, monthTotals, totalBudget } from '../lib/budget'
 import { goalViews, nearestGoal } from '../lib/goals'
 import { upcomingPayments } from '../lib/upcoming'
 import { cn } from '../lib/cn'
+import { BackupReminder } from '../features/backup/BackupReminder'
 
 export function Inicio() {
   const name = useSetting('userName', 'Raúl')
@@ -60,6 +61,8 @@ export function Inicio() {
       </header>
 
       <div className="space-y-4 px-4">
+        <BackupReminder />
+
         {/* Balance del mes: el elemento protagonista */}
         <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance de ${monthName(month)}`}>
           <HeroGlyph />
