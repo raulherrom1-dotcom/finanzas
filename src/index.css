@@ -142,6 +142,16 @@
     display: none;
   }
 
+  .scroll-x {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+
   .num {
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: 'tnum' 1, 'lnum' 1;
@@ -230,6 +240,15 @@
 }
 .animate-toast-in {
   animation: toast-in 260ms var(--ease-spring) both;
+}
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-c);
+  }
+}
+.ring-fill {
+  animation: ring-fill 900ms var(--ease-out-quick) both;
+  transition: stroke-dashoffset 500ms var(--ease-out-quick);
 }
 .animate-fill-x {
   transform-origin: left center;
