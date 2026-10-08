@@ -106,3 +106,10 @@ export function setCategoryArchived(id: string, archived: boolean) {
 export async function categoryUsage(id: string): Promise<number> {
   return db.transactions.where('categoryId').equals(id).count()
 }
+
+// ---- Presupuestos ----
+
+/** Define el presupuesto de una categoría (o 'total') desde ese mes en adelante. 0 lo quita. */
+export function setBudget(categoryId: string, fromMonth: string, amount: number) {
+  return db.budgets.put({ id: `${categoryId}:${fromMonth}`, categoryId, amount: Math.max(0, Math.round(amount)), fromMonth })
+}

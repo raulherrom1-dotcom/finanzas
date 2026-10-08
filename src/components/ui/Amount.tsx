@@ -48,7 +48,7 @@ export function Amount({
       <span aria-hidden>
         {p.sign}
         {p.whole}
-        {!hideCents && <span className={cn('text-[0.6em] font-[inherit] opacity-80', centsClassName)}>{p.cents}</span>}
+        {!hideCents && <span className={cn('text-[length:max(0.6em,11px)] opacity-80', centsClassName)}>{p.cents}</span>}
       </span>
     </span>
   )
