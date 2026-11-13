@@ -34,6 +34,7 @@ React 19 + Vite 8 + TypeScript 7, Tailwind CSS v4 (tokens en src/index.css con @
 - Tipografía Plus Jakarta Sans. Montos en negritas con los centavos más chicos (componente Amount). Cifras tabulares en listas y proporcionales en montos grandes y solos.
 - Tarjetas redondeadas de 20–24px con sombra azulada suave. Botones tipo píldora.
 - Inicio tipo cartera (src/components/AccountCarousel.tsx): las cuentas son tarjetas bancarias deslizables con el color de la cuenta mezclado al 55% con #0F1B3D, para que el texto blanco mida ≥4.7:1 con cualquier color de la paleta. Debajo: botones Gasto/Ingreso/Transferir, tarjeta del periodo (balance, entró/salió/ahorro y presupuesto) y movimientos recientes agrupados por día.
+- Análisis empieza con "Lo que notamos": hallazgos en texto de `monthInsights` (src/lib/analysis.ts, devuelve datos y la pantalla arma las frases con useMoney para respetar privacidad). En el mes en curso compara contra los mismos días del mes anterior.
 - Un rediseño oscuro ("Medianoche aurora") se probó y se descartó en nov 2026: Raúl prefiere estos colores claros.
 - Áreas táctiles de al menos 44×44px. iPhone: viewport-fit=cover, safe-area con env(), status-bar-style "default", sin rebote en el contenedor principal.
 - El modo privacidad (el ojo en Inicio) oculta todos los montos: usar Amount/useMoney, nunca formatMXN directo en pantalla.

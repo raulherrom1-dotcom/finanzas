@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Category, Transaction } from '../db/types'
-import { categoryBreakdown, categoryColors, monthlySeries, niceRange, niceTicks } from './analysis'
+import { categoryBreakdown, categoryColors, monthInsights, monthlySeries, niceRange, niceTicks } from './analysis'
 
 const t = (p: Partial<Transaction>): Transaction => ({ id: Math.random().toString(), type: 'expense', amount: 0, date: '2026-10-05', createdAt: 0, updatedAt: 0, ...p })
 const cats = new Map<string, Category>(
@@ -44,5 +44,42 @@ describe('series mensuales', () => {
     expect(niceTicks(0)).toEqual([0])
     expect(niceRange(-460000, 300000)).toEqual([-600000, -400000, -200000, 0, 200000, 400000])
     expect(niceRange(100000, 900000)).toEqual([0, 500000, 1000000])
+  })
+})
+
+describe('hallazgos del mes', () => {
+  const txs = [
+    // octubre
+    t({ categoryId: 'c0', amount: 100000, date: '2026-10-03' }),
+    t({ categoryId: 'c1', amount: 50000, date: '2026-10-05' }),
+    t({ categoryId: 'c1', amount: 999999, date: '2026-10-20' }), // después del día 12: no cuenta al comparar
+    // noviembre hasta el 12
+    t({ type: 'income', amount: 400000, date: '2026-11-10' }),
+    t({ categoryId: 'c0', amount: 60000, date: '2026-11-02', note: 'Súper grande' }),
+    t({ categoryId: 'c1', amount: 30000, date: '2026-11-04' }),
+  ]
+  const ins = monthInsights(txs, cats, '2026-11', '2026-11-12')
+  const get = <K extends string>(k: K) => ins.find((i) => i.kind === k) as Extract<(typeof ins)[number], { kind: K }>
+
+  it('compara contra los mismos días del mes anterior', () => {
+    expect(get('pace')).toMatchObject({ spent: 90000, partial: true })
+    expect(get('pace').diffPct).toBeCloseTo(-40) // 90,000 vs 150,000
+  })
+  it('lo que te quedó de lo que entró', () => {
+    expect(get('kept').pct).toBeCloseTo(77.5)
+  })
+  it('la categoría que más cambió, la principal y el gasto más grande', () => {
+    expect(get('category')).toMatchObject({ categoryId: 'c0' }) // −$400 es el cambio más grande
+    expect(get('category').diffPct).toBeCloseTo(-40)
+    expect(get('top')).toMatchObject({ categoryId: 'c0' })
+    expect(get('biggest')).toMatchObject({ name: 'Súper grande', amount: 60000 })
+    expect(get('daily').perDay).toBe(7500)
+  })
+  it('si gastas más de lo que entra, lo dice', () => {
+    const over = monthInsights([t({ type: 'income', amount: 1000, date: '2026-11-01' }), t({ amount: 3000, date: '2026-11-02' })], cats, '2026-11', '2026-11-12')
+    expect(over.find((i) => i.kind === 'overspent')).toMatchObject({ amount: 2000 })
+  })
+  it('mes sin movimientos: sin hallazgos', () => {
+    expect(monthInsights(txs, cats, '2026-05', '2026-11-12')).toEqual([])
   })
 })

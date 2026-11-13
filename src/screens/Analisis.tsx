@@ -9,11 +9,12 @@ import { MonthSwitcher } from '../components/MonthSwitcher'
 import { useFinance } from '../hooks/useFinance'
 import { byId } from '../db/queries'
 import { useApp } from '../state/app'
-import { categoryBreakdown, categoryColors, monthlySeries, niceRange, niceTicks, type MonthPoint } from '../lib/analysis'
-import { currentMonth, monthLabel, monthName } from '../lib/dates'
+import { categoryBreakdown, categoryColors, monthInsights, monthlySeries, niceRange, niceTicks, type MonthPoint } from '../lib/analysis'
+import { currentMonth, monthLabel, monthName, todayISO } from '../lib/dates'
 import { COLORS } from '../lib/palette'
 import { cn } from '../lib/cn'
 import { openMovimientos } from './Movimientos'
+import { Insights } from './AnalisisInsights'
 
 let rememberedMonth = currentMonth()
 
@@ -45,6 +46,7 @@ export function Analisis() {
   const { slices, total } = useMemo(() => categoryBreakdown(txs, cats, colors, month), [txs, cats, colors, month])
   const series = useMemo(() => monthlySeries(txs, month, 6), [txs, month])
   const current = series[series.length - 1]
+  const insights = useMemo(() => monthInsights(txs, cats, month, todayISO()), [txs, cats, month])
 
   if (!loaded) return null
   if (txs.length === 0) {
@@ -82,6 +84,8 @@ export function Analisis() {
             <Amount cents={current.balance} tone={current.balance < 0 ? 'neg' : 'ink'} hideCents={Math.abs(current.balance) >= 1_000_000} className="font-extrabold" />
           </Figure>
         </div>
+
+        <Insights insights={insights} cats={cats} month={month} />
 
         {/* Dona: gasto por categoría */}
         <ChartCard title="En qué se fue tu dinero" subtitle={`Gasto por categoría en ${monthName(month)}`}>

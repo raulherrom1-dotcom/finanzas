@@ -99,3 +99,80 @@ export function niceRange(min: number, max: number, count = 4): number[] {
   for (let v = Math.floor(lo / step) * step; v <= Math.ceil(hi / step) * step + step * 0.001; v += step) ticks.push(Math.round(v))
   return ticks
 }
+
+/**
+ * Hallazgos del mes en texto. Devuelve datos (no frases) para que la pantalla formatee los montos
+ * respetando el modo privacidad. En el mes en curso compara contra los mismos días del mes anterior,
+ * para no comparar medio mes contra un mes completo.
+ */
+export type Insight =
+  | { kind: 'pace'; spent: Cents; diffPct: number; prevMonth: MonthKey; partial: boolean }
+  | { kind: 'kept'; pct: number }
+  | { kind: 'overspent'; amount: Cents }
+  | { kind: 'category'; categoryId: string; name: string; diffPct: number; prevMonth: MonthKey }
+  | { kind: 'top'; categoryId: string; name: string; pct: number }
+  | { kind: 'biggest'; name: string; amount: Cents; date: string }
+  | { kind: 'daily'; perDay: Cents }
+
+const MIN_CATEGORY = 10_000 // $100: cambios en categorías más chicas no son noticia
+
+export function monthInsights(txs: Transaction[], cats: Map<string, Category>, month: MonthKey, today: string): Insight[] {
+  const prevMonth = addMonths(month, -1)
+  const partial = monthOf(today) === month
+  // Último día que se compara: hoy en el mes en curso; el mes completo si ya pasó.
+  const upTo = partial ? Number(today.slice(8, 10)) : 31
+  const day = (d: string) => Number(d.slice(8, 10))
+
+  let spent = 0
+  let prevSpent = 0
+  let income = 0
+  let biggest: Transaction | null = null
+  const byCat = new Map<string, Cents>()
+  const prevByCat = new Map<string, Cents>()
+  for (const t of txs) {
+    const m = monthOf(t.date)
+    if (m === month && t.type === 'income') income += t.amount
+    if (t.type !== 'expense') continue
+    const k = t.categoryId ?? '__none__'
+    if (m === month) {
+      spent += t.amount
+      byCat.set(k, (byCat.get(k) ?? 0) + t.amount)
+      if (!biggest || t.amount > biggest.amount) biggest = t
+    } else if (m === prevMonth && day(t.date) <= upTo) {
+      prevSpent += t.amount
+      prevByCat.set(k, (prevByCat.get(k) ?? 0) + t.amount)
+    }
+  }
+  if (spent === 0 && income === 0) return []
+
+  const out: Insight[] = []
+  if (prevSpent > 0) out.push({ kind: 'pace', spent, diffPct: ((spent - prevSpent) / prevSpent) * 100, prevMonth, partial })
+
+  if (income > 0) out.push(spent > income ? { kind: 'overspent', amount: spent - income } : { kind: 'kept', pct: ((income - spent) / income) * 100 })
+
+  // La categoría que más cambió en pesos, si el cambio es notable
+  let change: { id: string; delta: number; pct: number } | null = null
+  for (const [id, prev] of prevByCat) {
+    if (id === '__none__' || prev < MIN_CATEGORY) continue
+    const now = byCat.get(id) ?? 0
+    const pct = ((now - prev) / prev) * 100
+    if (Math.abs(pct) < 15) continue
+    if (!change || Math.abs(now - prev) > Math.abs(change.delta)) change = { id, delta: now - prev, pct }
+  }
+  if (change) out.push({ kind: 'category', categoryId: change.id, name: cats.get(change.id)?.name ?? 'Sin categoría', diffPct: change.pct, prevMonth })
+
+  const top = [...byCat].filter(([id]) => id !== '__none__').sort((a, b) => b[1] - a[1])[0]
+  if (top && spent > 0 && byCat.size > 1) out.push({ kind: 'top', categoryId: top[0], name: cats.get(top[0])?.name ?? 'Sin categoría', pct: (top[1] / spent) * 100 })
+
+  if (biggest && byCat.size > 1) {
+    const b = biggest as Transaction
+    out.push({ kind: 'biggest', name: b.note?.trim() || cats.get(b.categoryId ?? '')?.name || 'Un gasto', amount: b.amount, date: b.date })
+  }
+
+  if (spent > 0) {
+    const [y, m] = month.split('-').map(Number)
+    const days = partial ? upTo : new Date(Date.UTC(y, m, 0)).getUTCDate()
+    out.push({ kind: 'daily', perDay: Math.round(spent / days) })
+  }
+  return out
+}
