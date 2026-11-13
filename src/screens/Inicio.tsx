@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, CreditCard, Eye, EyeOff, Gauge, PiggyBank, Settings, Target, type LucideIcon } from 'lucide-react'
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, ChevronRight, CreditCard, Eye, EyeOff, Gauge, Settings, Target, type LucideIcon } from 'lucide-react'
 import { IconButton } from '../components/ui/Button'
 import { Amount, useMoney } from '../components/ui/Amount'
 import { Callout } from '../components/ui/Callout'
@@ -7,6 +7,7 @@ import { SectionTitle } from '../components/ui/ScreenHeader'
 import { CategoryIcon } from '../components/ui/CategoryIcon'
 import { ProgressBar, ProgressRing } from '../components/ui/Progress'
 import { TxRow } from '../components/TxRow'
+import { AccountCarousel } from '../components/AccountCarousel'
 import { Button } from '../components/ui/Button'
 import { usePayCycle, useSetting } from '../db/db'
 import { activeProfile } from '../lib/profiles'
@@ -14,7 +15,9 @@ import { byId } from '../db/queries'
 import { useFinance } from '../hooks/useFinance'
 import { useApp } from '../state/app'
 import { navigate } from '../lib/router'
-import { daysBetween, longDate, monthEnd, monthName, relativeDays, shortDate, todayISO } from '../lib/dates'
+import { dayLabel, daysBetween, longDate, monthEnd, monthName, relativeDays, shortDate, todayISO } from '../lib/dates'
+import { computeBalances, netWorth } from '../lib/balances'
+import type { TxType } from '../db/types'
 import { freqOf, monthSavings, monthTotals, periodOf, periodRange, totalBudget } from '../lib/budget'
 import { goalViews, nearestGoal } from '../lib/goals'
 import { upcomingPayments } from '../lib/upcoming'
@@ -37,8 +40,10 @@ export function Inicio() {
   const total = useMemo(() => totalBudget(budgets, categories, totals.expense, month, today, cycle), [budgets, categories, totals.expense, month, today, cycle])
   const cats = useMemo(() => byId(categories), [categories])
   const accs = useMemo(() => byId(accounts), [accounts])
+  const active = useMemo(() => accounts.filter((a) => !a.archived), [accounts])
+  const balances = useMemo(() => computeBalances(accounts, txs), [accounts, txs])
   const latest = useMemo(
-    () => [...txs].sort((a, b) => (a.date === b.date ? b.createdAt - a.createdAt : a.date < b.date ? 1 : -1)).slice(0, 5),
+    () => [...txs].sort((a, b) => (a.date === b.date ? b.createdAt - a.createdAt : a.date < b.date ? 1 : -1)).slice(0, 6),
     [txs],
   )
   const upcoming = useMemo(() => upcomingPayments(recurring, accounts, txs, today, 14).slice(0, 4), [recurring, accounts, txs, today])
@@ -67,68 +72,84 @@ export function Inicio() {
       <div className="space-y-4 px-4">
         <BackupReminder />
 
-        {/* Balance del mes: el elemento protagonista */}
-        <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance ${periodName}`}>
-          <HeroGlyph />
-          <p className="relative text-sm font-semibold">Balance {periodName}</p>
-          <Amount cents={totals.balance} proportional className="relative mt-1 block text-2xl font-extrabold tracking-tight" />
+      </div>
 
-          <div className="relative mt-4 grid grid-cols-2 gap-2">
-            <HeroStat icon={ArrowDownLeft} label="Entró" cents={totals.income} />
-            <HeroStat icon={ArrowUpRight} label="Salió" cents={totals.expense} />
-          </div>
-
-          <div className="relative mt-5">
-            <PaceTrack spentPct={total ? total.pct : totals.income > 0 ? (totals.expense / totals.income) * 100 : 0} elapsedPct={(day / days) * 100} />
-            <p className="mt-2 text-[13px] font-semibold">
-              Día {day} de {days}.{' '}
-              {total
-                ? `Llevas ${Math.round(total.pct)}% de tu presupuesto.`
-                : totals.income > 0
-                  ? `Has gastado el ${Math.round((totals.expense / totals.income) * 100)}% de lo que entró.`
-                  : 'Registra tus ingresos para ver tu ritmo.'}
-            </p>
-          </div>
-        </section>
-
-        {/* Presupuesto total */}
-        {total ? (
-          <button type="button" onClick={() => navigate('/presupuesto')} className="card flex w-full items-center gap-4 p-4 text-left active:bg-accent-soft">
-            <ProgressRing pct={total.pct} size={76} stroke={9} level={total.level}>
-              <span className={cn('num text-base font-extrabold', total.level === 'over' ? 'text-neg-ink' : total.level === 'warn' ? 'text-warn-ink' : 'text-ink')}>
-                {Math.round(total.pct)}%
-              </span>
-            </ProgressRing>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm text-muted">Presupuesto</p>
-              {total.remaining >= 0 ? (
-                <p className="text-base font-bold">
-                  Te quedan <Amount cents={total.remaining} className="font-extrabold" /> de {money(total.budget, { noCents: true })}
-                </p>
-              ) : (
-                <p className="text-base font-bold text-neg-ink">
-                  Te pasaste por <Amount cents={-total.remaining} className="font-extrabold" />
-                </p>
-              )}
-              {total.perDay !== null && <p className="mt-0.5 text-sm text-muted">Hasta {money(total.perDay)} al día</p>}
-              {total.level === 'warn' && <p className="mt-0.5 text-sm font-semibold text-warn-ink">Ya vas en más del 80%</p>}
-            </div>
-            <ChevronRight size={20} className="shrink-0 text-muted" />
+      {/* Cartera: tus cuentas como tarjetas */}
+      <section className="mt-1" aria-label="Tus cuentas">
+        <div className="mb-2 flex min-h-11 items-center justify-between gap-2 px-4">
+          <h2 className="text-base font-extrabold tracking-tight">Tus cuentas</h2>
+          <button type="button" onClick={() => navigate('/ajustes/cuentas')} className="flex min-h-11 items-center gap-1 text-sm font-semibold text-muted">
+            Total <Amount cents={netWorth(active, balances)} className="font-extrabold text-ink" />
+            <ChevronRight size={16} />
           </button>
-        ) : (
-          loaded && (
-            <Callout icon={Gauge} title="Ponle límite a tu mes" action={<Button size="sm" onClick={() => navigate('/presupuesto')}>Crear presupuesto</Button>}>
-              Te avisamos cuando llegues al 80% y si te pasas.
-            </Callout>
-          )
-        )}
-
-        {/* Ingresos, gastos y ahorro */}
-        <div className="grid grid-cols-3 gap-2.5">
-          <StatTile icon={ArrowDownLeft} label="Ingresos" cents={totals.income} tone="pos" iconClass="bg-pos-soft text-pos-ink" />
-          <StatTile icon={ArrowUpRight} label="Gastos" cents={totals.expense} tone="ink" iconClass="bg-accent-soft text-accent-press" />
-          <StatTile icon={PiggyBank} label="Ahorro" cents={savings} tone="ink" iconClass="bg-accent-soft text-accent" />
         </div>
+        {loaded && <AccountCarousel accounts={active} balances={balances} txs={txs} today={today} />}
+      </section>
+
+      <div className="mt-5 space-y-5 px-4">
+        {/* Acciones rápidas */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <QuickAction type="expense" label="Gasto" icon={ArrowUpRight} iconClass="bg-accent text-white" onPick={openQuickAdd} />
+          <QuickAction type="income" label="Ingreso" icon={ArrowDownLeft} iconClass="bg-pos-ink text-white" onPick={openQuickAdd} />
+          <QuickAction type="transfer" label="Transferir" icon={ArrowLeftRight} iconClass="bg-info-ink text-white" onPick={openQuickAdd} />
+        </div>
+
+        {/* Resumen del periodo y presupuesto */}
+        <section className="card overflow-hidden p-0" aria-label={`Balance ${periodName}`}>
+          <div className="p-5 pb-4">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold text-muted">Balance {periodName}</p>
+              <p className="shrink-0 text-xs font-semibold text-muted">
+                Día {day} de {days}
+              </p>
+            </div>
+            <Amount cents={totals.balance} proportional tone={totals.balance < 0 ? 'neg' : 'ink'} className="mt-0.5 block text-2xl font-extrabold tracking-tight" />
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <MiniStat label="Entró" cents={totals.income} tone="pos" />
+              <MiniStat label="Salió" cents={totals.expense} tone="ink" />
+              <MiniStat label="Ahorraste" cents={savings} tone="ink" />
+            </div>
+          </div>
+
+          {total ? (
+            <button type="button" onClick={() => navigate('/presupuesto')} className="flex w-full items-center gap-4 border-t border-line bg-bg px-5 py-4 text-left active:bg-accent-soft">
+              <ProgressRing pct={total.pct} size={60} stroke={7} level={total.level}>
+                <span className={cn('num text-sm font-extrabold', total.level === 'over' ? 'text-neg-ink' : total.level === 'warn' ? 'text-warn-ink' : 'text-ink')}>
+                  {Math.round(total.pct)}%
+                </span>
+              </ProgressRing>
+              <div className="min-w-0 flex-1">
+                {total.remaining >= 0 ? (
+                  <p className="font-bold">
+                    Te quedan <Amount cents={total.remaining} className="font-extrabold" />
+                  </p>
+                ) : (
+                  <p className="font-bold text-neg-ink">
+                    Te pasaste por <Amount cents={-total.remaining} className="font-extrabold" />
+                  </p>
+                )}
+                <p className={cn('text-sm', total.level === 'warn' ? 'font-semibold text-warn-ink' : 'text-muted')}>
+                  {total.level === 'warn'
+                    ? 'Ya vas en más del 80%'
+                    : total.perDay !== null
+                      ? `Hasta ${money(total.perDay)} al día`
+                      : 'Del presupuesto del periodo'}
+                </p>
+              </div>
+              <ChevronRight size={20} className="shrink-0 text-muted" />
+            </button>
+          ) : (
+            loaded && (
+              <div className="flex items-center gap-3 border-t border-line bg-bg px-5 py-4">
+                <Gauge size={22} className="shrink-0 text-accent" />
+                <p className="min-w-0 flex-1 text-sm text-muted">Ponle límite a tu periodo y te avisamos al llegar al 80%.</p>
+                <Button size="sm" onClick={() => navigate('/presupuesto')}>
+                  Crear
+                </Button>
+              </div>
+            )
+          )}
+        </section>
 
         {/* Últimos movimientos */}
         <section className="pt-2">
@@ -151,15 +172,16 @@ export function Inicio() {
             )
           ) : (
             <div className="-mx-2">
-              {latest.map((t) => (
-                <TxRow
-                  key={t.id}
-                  tx={t}
-                  category={t.categoryId ? cats.get(t.categoryId) : undefined}
-                  account={t.accountId ? accs.get(t.accountId) : undefined}
-                  toAccount={t.toAccountId ? accs.get(t.toAccountId) : undefined}
-                  showDate={t.date === today ? undefined : shortDate(t.date)}
-                />
+              {latest.map((t, i) => (
+                <div key={t.id}>
+                  {t.date !== latest[i - 1]?.date && <p className="px-2 pt-2 pb-1 text-xs font-bold tracking-wide text-muted uppercase">{dayLabel(t.date, today)}</p>}
+                  <TxRow
+                    tx={t}
+                    category={t.categoryId ? cats.get(t.categoryId) : undefined}
+                    account={t.accountId ? accs.get(t.accountId) : undefined}
+                    toAccount={t.toAccountId ? accs.get(t.toAccountId) : undefined}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -248,50 +270,20 @@ export function Inicio() {
   )
 }
 
-function HeroStat({ icon: Icon, label, cents }: { icon: LucideIcon; label: string; cents: number }) {
+function QuickAction({ type, label, icon: Icon, iconClass, onPick }: { type: TxType; label: string; icon: LucideIcon; iconClass: string; onPick: (req: { type: TxType }) => void }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-ink/15 px-3 py-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15">
-        <Icon size={17} strokeWidth={2.4} />
+    <button type="button" onClick={() => onPick({ type })} className="card flex flex-col items-center gap-2 px-2 py-3.5 transition-transform duration-150 active:scale-[0.97]">
+      <span className={cn('flex size-11 items-center justify-center rounded-2xl', iconClass)}>
+        <Icon size={22} strokeWidth={2.4} />
       </span>
-      <span className="min-w-0">
-        <span className="block text-xs font-semibold">{label}</span>
-        <Amount cents={cents} className="block truncate text-[15px] font-extrabold" />
-      </span>
-    </div>
+      <span className="text-sm font-bold">{label}</span>
+    </button>
   )
 }
 
-/** Pista del ritmo del mes: el relleno es lo gastado y la marca es el día del mes. */
-function PaceTrack({ spentPct, elapsedPct }: { spentPct: number; elapsedPct: number }) {
-  const w = Math.max(0, Math.min(100, spentPct))
-  const ahead = spentPct > elapsedPct + 8
+function MiniStat({ label, cents, tone }: { label: string; cents: number; tone: 'pos' | 'ink' }) {
   return (
-    <div className="relative h-2 rounded-full bg-white/25" aria-hidden>
-      <div className={cn('animate-fill-x absolute inset-y-0 left-0 rounded-full', ahead ? 'bg-warn' : 'bg-white')} style={{ width: `${w}%` }} />
-      <div className="absolute -top-1.5 h-5 w-[3px] -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_2px_rgba(59,91,255,0.6)]" style={{ left: `${elapsedPct}%` }} />
-    </div>
-  )
-}
-
-/** Trazo decorativo de la gráfica ascendente del ícono, muy sutil, en la esquina clara. */
-function HeroGlyph() {
-  return (
-    <svg className="pointer-events-none absolute -top-2 -right-6 h-36 w-48 opacity-[0.14]" viewBox="0 0 512 512" aria-hidden>
-      <g fill="none" stroke="#fff" strokeWidth="40" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M140 340 L226 254 L288 310 L380 214" />
-        <path d="M318 206 L384 206 L384 272" />
-      </g>
-    </svg>
-  )
-}
-
-function StatTile({ icon: Icon, label, cents, tone, iconClass }: { icon: LucideIcon; label: string; cents: number; tone: 'pos' | 'ink'; iconClass: string }) {
-  return (
-    <div className="card min-w-0 p-3">
-      <span className={cn('mb-2 flex size-8 items-center justify-center rounded-full', iconClass)}>
-        <Icon size={16} strokeWidth={2.4} />
-      </span>
+    <div className="min-w-0 rounded-2xl bg-bg px-3 py-2.5">
       <p className="text-xs text-muted">{label}</p>
       <Amount cents={cents} tone={tone} hideCents={Math.abs(cents) >= 1_000_000} className="block truncate text-[15px] font-extrabold tracking-tight" />
     </div>

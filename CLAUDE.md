@@ -32,7 +32,9 @@ React 19 + Vite 8 + TypeScript 7, Tailwind CSS v4 (tokens en src/index.css con @
 - Verde, ámbar y coral NO se usan como texto (no pasan contraste). Para texto: pos-ink #047857, warn-ink #9A5B00, neg-ink #C42F37; los colores puros van en barras, íconos y fondos.
 - Gráficas por categoría con #3B5BFF, #10B981, #8B5CF6, #F5A524, #06B6D4, #F2545B, #6C8CFF y #94A3B8 (gris = "Otros", siempre al final). El color sigue a la categoría, no a su lugar en el mes.
 - Tipografía Plus Jakarta Sans. Montos en negritas con los centavos más chicos (componente Amount). Cifras tabulares en listas y proporcionales en montos grandes y solos.
-- Tarjetas redondeadas de 20–24px con sombra azulada suave. Botones tipo píldora. La tarjeta de balance tiene un degradado a 60° con la parte clara arriba a la derecha, para que el texto blanco mida ≥4.7:1.
+- Tarjetas redondeadas de 20–24px con sombra azulada suave. Botones tipo píldora.
+- Inicio tipo cartera (src/components/AccountCarousel.tsx): las cuentas son tarjetas bancarias deslizables con el color de la cuenta mezclado al 55% con #0F1B3D, para que el texto blanco mida ≥4.7:1 con cualquier color de la paleta. Debajo: botones Gasto/Ingreso/Transferir, tarjeta del periodo (balance, entró/salió/ahorro y presupuesto) y movimientos recientes agrupados por día.
+- Un rediseño oscuro ("Medianoche aurora") se probó y se descartó en nov 2026: Raúl prefiere estos colores claros.
 - Áreas táctiles de al menos 44×44px. iPhone: viewport-fit=cover, safe-area con env(), status-bar-style "default", sin rebote en el contenedor principal.
 - El modo privacidad (el ojo en Inicio) oculta todos los montos: usar Amount/useMoney, nunca formatMXN directo en pantalla.
 - Animaciones sutiles y rápidas, desactivadas con "Reducir movimiento".
