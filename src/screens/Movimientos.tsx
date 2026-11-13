@@ -110,7 +110,7 @@ export function Movimientos() {
         }
       />
 
-      <div className="sticky top-0 z-10 bg-bg/95 px-4 pt-1 pb-3 backdrop-blur-md">
+      <div className="sticky top-0 z-10 bg-bg/35 px-4 pt-1 pb-3 backdrop-blur-2xl">
         <label className="relative block">
           <Search size={19} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" />
           <input

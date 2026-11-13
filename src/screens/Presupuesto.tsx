@@ -196,7 +196,7 @@ function TotalCard({ total, isCurrent, onEdit }: { total: TotalBudget; isCurrent
       </div>
 
       {isCurrent && total.perDay !== null && (
-        <p className="mt-4 rounded-2xl bg-bg px-4 py-3 text-sm">
+        <p className="mt-4 rounded-2xl bg-white/[0.06] px-4 py-3 text-sm ring-1 ring-white/10 ring-inset">
           Puedes gastar <strong className="num">{money(total.perDay)}</strong> al día durante los {total.daysLeft} días que quedan.
         </p>
       )}

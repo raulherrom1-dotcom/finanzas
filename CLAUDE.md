@@ -28,12 +28,14 @@ React 19 + Vite 8 + TypeScript 7, Tailwind CSS v4 (tokens en src/index.css con @
 - Perfiles (src/lib/profiles.ts): cada perfil tiene su propia base de datos ('finanzas' para el principal, 'finanzas-<id>' para los demás); la lista y el perfil activo viven en localStorage. Cambiar de perfil recarga la app. Lo que en localStorage dependa de los datos de un perfil usa `profileKey()`.
 
 ## Diseño (respetarlo)
-- Tema claro fijo, sin modo oscuro. Solo la paleta de src/index.css: fondo #FFFFFF, superficies #F4F7FE con borde #E3EAF8, texto #0F1B3D / #6B7894, acento cobalto #3B5BFF (presionado #2B47D6, suave #E6ECFF), info #E8F0FE/#1F3A8A, esmeralda #10B981, ámbar #F5A524, coral #F2545B.
-- Verde, ámbar y coral NO se usan como texto (no pasan contraste). Para texto: pos-ink #047857, warn-ink #9A5B00, neg-ink #C42F37; los colores puros van en barras, íconos y fondos.
-- Gráficas por categoría con #3B5BFF, #10B981, #8B5CF6, #F5A524, #06B6D4, #F2545B, #6C8CFF y #94A3B8 (gris = "Otros", siempre al final). El color sigue a la categoría, no a su lugar en el mes.
-- Tipografía Plus Jakarta Sans. Montos en negritas con los centavos más chicos (componente Amount). Cifras tabulares en listas y proporcionales en montos grandes y solos.
-- Tarjetas redondeadas de 20–24px con sombra azulada suave. Botones tipo píldora. La tarjeta de balance tiene un degradado a 60° con la parte clara arriba a la derecha, para que el texto blanco mida ≥4.7:1.
-- Áreas táctiles de al menos 44×44px. iPhone: viewport-fit=cover, safe-area con env(), status-bar-style "default", sin rebote en el contenedor principal.
+- Tema "Medianoche aurora" (desde el rediseño de nov 2026; la versión clara anterior está en la etiqueta git `antes-rediseno`). Oscuro fijo, sin modo claro. Solo la paleta de src/index.css: fondo #080C1D con resplandores violeta/cian/rosa fijos en `body`, superficies #121833, hojas #161D3B, bordes #262F55, texto #F3F5FF / #9BA5C9, acento violeta #6D52FF (rellenos con texto blanco), `accent-press` #B9AFFF (texto de acento, el nombre es histórico), `accent-light` #8C7BFF (íconos), suave #231F52, info #13223F/#A9C7FF, menta #34D399, ámbar #FBBF24, rosa #FB7185.
+- Para texto de estado usar pos-ink #6EE7B7, warn-ink #FCD34D, neg-ink #FDA4AF; los colores puros van en barras, íconos y fondos. Medir contraste (≥4.5:1 texto, ≥3:1 íconos) antes de agregar una combinación nueva; las medidas están en el comentario de src/index.css.
+- Nunca usar `bg-ink` ni `bg-white` como fondo con texto: en este tema ink es casi blanco. Lo que flota (barra inferior, toasts, tooltips) usa la clase `.glass`; las tarjetas `.card` (vidrio sin desenfoque, por rendimiento); el botón principal `.btn-primary` (degradado violeta con brillo).
+- Gráficas por categoría con #3B5BFF, #10B981, #8B5CF6, #F5A524, #06B6D4, #F2545B, #6C8CFF y #94A3B8 (gris = "Otros", siempre al final). El color sigue a la categoría, no a su lugar en el mes. Los círculos de ícono usan `softBg`/`iconInk` de src/lib/palette.ts.
+- Tipografía: Plus Jakarta Sans para texto y listas (cifras tabulares); Outfit para títulos h1/h2 y montos grandes y solos (`Amount proportional` → `.num-prop`). Los pesos de h1/h2 y `.num-prop` se fijan en CSS fuera de capas (Outfit en 800 se empasta). Centavos más chicos con el componente Amount.
+- Tarjetas redondeadas de 22–28px. Botones tipo píldora. La tarjeta de balance es una aurora (degradado violeta-azul con manchas rosa y cian animadas); el texto blanco mide ≥4.6:1 en la zona más clara. Barras y anillos de progreso con degradado violeta→cian y brillo.
+- Barra inferior: cápsula de vidrio flotante; el contenido pasa por debajo (`pb-nav` en App.tsx).
+- Áreas táctiles de al menos 44×44px. iPhone: viewport-fit=cover, safe-area con env(), status-bar-style "black-translucent", sin rebote en el contenedor principal.
 - El modo privacidad (el ojo en Inicio) oculta todos los montos: usar Amount/useMoney, nunca formatMXN directo en pantalla.
 - Animaciones sutiles y rápidas, desactivadas con "Reducir movimiento".
 

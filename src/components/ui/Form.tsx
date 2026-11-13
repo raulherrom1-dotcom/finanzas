@@ -20,7 +20,7 @@ export function Field({ label, hint, children, error }: { label: string; hint?: 
 }
 
 const inputBase =
-  'block h-13 w-full rounded-2xl border border-line bg-surface px-4 text-base font-semibold text-ink placeholder:font-medium placeholder:text-muted outline-none transition-colors focus:border-accent focus:bg-bg'
+  'block h-13 w-full rounded-2xl border border-line-strong/70 bg-surface px-4 text-base font-semibold text-ink placeholder:font-medium placeholder:text-muted outline-none transition-colors focus:border-accent focus:bg-bg'
 
 export function TextInput({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(inputBase, className)} autoComplete="off" {...rest} />
@@ -98,7 +98,7 @@ export function Segmented<T extends string>({
               'flex min-w-0 items-center justify-center rounded-full font-bold transition-[background-color,color,box-shadow] duration-200',
               fit ? 'flex-auto px-3' : 'flex-1 px-2',
               size === 'md' ? 'h-11 text-sm' : 'h-11 text-[13px]',
-              on ? 'bg-bg text-accent-press shadow-card' : 'text-muted active:text-ink',
+              on ? 'btn-primary' : 'text-muted active:text-ink',
             )}
           >
             <span className="truncate">{o.label}</span>

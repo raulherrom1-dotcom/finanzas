@@ -274,7 +274,7 @@ function QuickAddForm({ req, onDone }: { req: NonNullable<QuickAddRequest>; onDo
       {/* Monto */}
       <div className="flex h-16 items-center justify-center" aria-live="polite">
         {saved ? (
-          <span className="animate-pop flex size-14 items-center justify-center rounded-full bg-pos text-white shadow-card">
+          <span className="animate-pop flex size-14 items-center justify-center rounded-full bg-pos text-bg shadow-card">
             <Check size={32} strokeWidth={3} />
           </span>
         ) : (

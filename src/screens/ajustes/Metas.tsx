@@ -69,7 +69,7 @@ export function Metas() {
                   {done.map((v) => (
                     <li key={v.goal.id}>
                       <button type="button" onClick={() => setDetail(v.goal.id)} className="flex w-full items-center gap-3 rounded-card bg-pos-soft px-4 py-3 text-left">
-                        <span className="flex size-10 items-center justify-center rounded-full bg-white text-pos-ink">
+                        <span className="flex size-10 items-center justify-center rounded-full bg-pos-soft text-pos-ink">
                           <Trophy size={20} />
                         </span>
                         <span className="min-w-0 flex-1">
@@ -152,7 +152,7 @@ function GoalCard({ view, onOpen, onContribute }: { view: GoalView; onOpen: () =
           </div>
           <span className="num text-lg font-extrabold text-accent-press">{Math.floor(view.pct)}%</span>
         </div>
-        <ProgressBar pct={view.pct} color="var(--color-accent)" />
+        <ProgressBar pct={view.pct} color="linear-gradient(90deg, #6d52ff, #22d3ee)" />
         <p className="mt-2 text-sm">
           <span className="font-bold">{money(view.saved)}</span>
           <span className="text-muted"> de {money(goal.target)}</span>
@@ -376,7 +376,7 @@ function GoalForm({ goal, onClose }: { goal?: Goal; onClose: () => void }) {
         <IconPicker value={icon} color={color} onChange={setIcon} />
       </div>
       {error && <p className="mb-3 text-sm font-semibold text-neg-ink">{error}</p>}
-      <div className={cn('sticky bottom-0 -mx-5 bg-bg px-5 pt-2 pb-1')}>
+      <div className={cn('sticky bottom-0 -mx-5 bg-elev px-5 pt-2 pb-1')}>
         <Button size="lg" block onClick={save}>
           {goal ? 'Guardar cambios' : 'Crear meta'}
         </Button>

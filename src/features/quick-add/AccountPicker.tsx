@@ -63,7 +63,7 @@ export function AccountPicker({
                   {a.name !== ACCOUNT_TYPE_LABEL[a.type] && <span className="block text-sm text-muted">{ACCOUNT_TYPE_LABEL[a.type]}</span>}
                 </span>
                 <Amount cents={balances.get(a.id) ?? 0} className="text-sm font-bold" tone={(balances.get(a.id) ?? 0) < 0 ? 'neg' : 'ink'} />
-                <span className="flex w-6 justify-center">{on && <Check size={20} strokeWidth={2.6} className="text-accent" />}</span>
+                <span className="flex w-6 justify-center">{on && <Check size={20} strokeWidth={2.6} className="text-accent-light" />}</span>
               </button>
             </li>
           )
@@ -82,7 +82,7 @@ export function AccountPicker({
                 <CircleOff size={20} />
               </span>
               <span className="flex-1 text-base font-bold">Sin cuenta</span>
-              <span className="flex w-6 justify-center">{!value && <Check size={20} strokeWidth={2.6} className="text-accent" />}</span>
+              <span className="flex w-6 justify-center">{!value && <Check size={20} strokeWidth={2.6} className="text-accent-light" />}</span>
             </button>
           </li>
         )}
@@ -98,7 +98,7 @@ export function AccountPicker({
             onChange={(m) => onMethod(m === 'none' ? undefined : m)}
             options={METHODS.map((m) => ({ value: m, label: <span title={METHOD_LABEL[m]}>{METHOD_SHORT[m]}</span> }))}
           />
-          <button type="button" onClick={onClose} className="mt-4 h-12 w-full rounded-full bg-accent text-base font-bold text-white active:bg-accent-press">
+          <button type="button" onClick={onClose} className="btn-primary mt-4 h-12 w-full rounded-full text-base font-bold">
             Listo
           </button>
         </div>

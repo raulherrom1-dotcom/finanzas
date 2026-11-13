@@ -37,7 +37,7 @@ export function Celebration({ title, onDone }: { title: string; onDone: () => vo
               }}
             />
           ))}
-          <span className="animate-pop flex size-24 items-center justify-center rounded-full bg-accent text-white shadow-float">
+          <span className="animate-pop flex size-24 items-center justify-center btn-primary rounded-full">
             <Trophy size={44} strokeWidth={2} />
           </span>
         </div>

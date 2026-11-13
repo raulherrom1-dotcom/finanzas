@@ -299,7 +299,7 @@ export function ImportarCsv() {
                 </Callout>
               )}
 
-              <div className="sticky bottom-0 -mx-4 bg-bg/95 px-4 pt-2 pb-3 backdrop-blur-md">
+              <div className="sticky bottom-0 -mx-4 bg-bg/70 px-4 pt-2 pb-3 backdrop-blur-xl">
                 <Button size="lg" block disabled={!selected.length || busy} onClick={doImport}>
                   {selected.length ? `Importar ${selected.length} ${selected.length === 1 ? 'movimiento' : 'movimientos'}` : 'Nada que importar'}
                 </Button>

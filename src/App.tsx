@@ -62,7 +62,7 @@ export default function App() {
   return (
     <>
       <main ref={main} className="scroll-area relative flex-1">
-        <div key={path} className="animate-screen-in pb-8">
+        <div key={path} className="animate-screen-in pb-nav">
           <Suspense fallback={null}>{screenFor(path)}</Suspense>
         </div>
       </main>
