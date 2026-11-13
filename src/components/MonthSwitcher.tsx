@@ -4,8 +4,20 @@ import { addMonths, currentMonth, monthLabel, type MonthKey } from '../lib/dates
 import { cn } from '../lib/cn'
 
 /** Navegación entre meses: ‹ Octubre 2026 › */
-export function MonthSwitcher({ month, onChange, className, allowFuture }: { month: MonthKey; onChange: (m: MonthKey) => void; className?: string; allowFuture?: boolean }) {
-  const now = currentMonth()
+export function MonthSwitcher({
+  month,
+  onChange,
+  className,
+  allowFuture,
+  now = currentMonth(),
+}: {
+  month: MonthKey
+  onChange: (m: MonthKey) => void
+  className?: string
+  allowFuture?: boolean
+  /** Mes (o periodo) actual */
+  now?: MonthKey
+}) {
   const canNext = allowFuture || month < now
   return (
     <div className={cn('flex items-center justify-between gap-2', className)}>

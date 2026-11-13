@@ -1,6 +1,36 @@
 import type { Account, Budget, Category, Cents, GoalContribution, Transaction } from '../db/types'
-import { addMonths, currentMonth, daysBetween, monthDayCount, monthEnd, monthOf, todayISO, type MonthKey } from './dates'
+import { addDays, addMonths, daysBetween, daysInMonth, makeISO, monthOf, todayISO, type ISODate, type MonthKey } from './dates'
 import { levelFor, type Level } from './levels'
+
+/**
+ * Periodo del presupuesto: empieza el día de pago y termina un día antes del siguiente pago.
+ * El periodo "2026-11" es el que empieza en noviembre. `starts` guarda los meses en que el pago cayó otro día.
+ */
+export interface PayCycle {
+  payDay: number
+  starts: Record<MonthKey, ISODate>
+}
+
+export const CALENDAR: PayCycle = { payDay: 1, starts: {} }
+
+export function periodStart(c: PayCycle, month: MonthKey): ISODate {
+  const [y, m] = month.split('-').map(Number)
+  return c.starts[month] ?? makeISO(y, m, Math.min(c.payDay, daysInMonth(y, m)))
+}
+
+export function periodRange(c: PayCycle, month: MonthKey): { from: ISODate; to: ISODate } {
+  return { from: periodStart(c, month), to: addDays(periodStart(c, addMonths(month, 1)), -1) }
+}
+
+/** El periodo al que pertenece una fecha. */
+export function periodOf(c: PayCycle, date: ISODate): MonthKey {
+  let m = monthOf(date)
+  while (date < periodStart(c, m)) m = addMonths(m, -1)
+  while (date >= periodStart(c, addMonths(m, 1))) m = addMonths(m, 1)
+  return m
+}
+
+const inPeriod = (date: ISODate, r: { from: ISODate; to: ISODate }) => date >= r.from && date <= r.to
 
 /** Presupuesto vigente en un mes: el más reciente con fromMonth ≤ mes. 0 o sin registro = no hay. */
 export function budgetFor(budgets: Budget[], categoryId: string, month: MonthKey): Cents | null {
@@ -12,21 +42,23 @@ export function budgetFor(budgets: Budget[], categoryId: string, month: MonthKey
   return best && best.amount > 0 ? best.amount : null
 }
 
-export function monthTotals(txs: Transaction[], month: MonthKey) {
+export function monthTotals(txs: Transaction[], month: MonthKey, cycle = CALENDAR) {
+  const r = periodRange(cycle, month)
   let income = 0
   let expense = 0
   for (const t of txs) {
-    if (monthOf(t.date) !== month) continue
+    if (!inPeriod(t.date, r)) continue
     if (t.type === 'income') income += t.amount
     else if (t.type === 'expense') expense += t.amount
   }
   return { income, expense, balance: income - expense }
 }
 
-export function spentByCategory(txs: Transaction[], month: MonthKey): Map<string, Cents> {
+export function spentByCategory(txs: Transaction[], month: MonthKey, cycle = CALENDAR): Map<string, Cents> {
+  const r = periodRange(cycle, month)
   const m = new Map<string, Cents>()
   for (const t of txs) {
-    if (t.type !== 'expense' || monthOf(t.date) !== month) continue
+    if (t.type !== 'expense' || !inPeriod(t.date, r)) continue
     const k = t.categoryId ?? '__none__'
     m.set(k, (m.get(k) ?? 0) + t.amount)
   }
@@ -34,12 +66,13 @@ export function spentByCategory(txs: Transaction[], month: MonthKey): Map<string
 }
 
 /** Ahorro del mes = abonos netos a metas + transferencias hacia cuentas de ahorro (desde otras cuentas). */
-export function monthSavings(txs: Transaction[], contributions: GoalContribution[], accounts: Account[], month: MonthKey): Cents {
+export function monthSavings(txs: Transaction[], contributions: GoalContribution[], accounts: Account[], month: MonthKey, cycle = CALENDAR): Cents {
+  const r = periodRange(cycle, month)
   const savings = new Set(accounts.filter((a) => a.type === 'savings').map((a) => a.id))
   let total = 0
-  for (const c of contributions) if (monthOf(c.date) === month) total += c.amount
+  for (const c of contributions) if (inPeriod(c.date, r)) total += c.amount
   for (const t of txs) {
-    if (t.type !== 'transfer' || monthOf(t.date) !== month) continue
+    if (t.type !== 'transfer' || !inPeriod(t.date, r)) continue
     const toSav = t.toAccountId && savings.has(t.toAccountId)
     const fromSav = t.accountId && savings.has(t.accountId)
     if (toSav && !fromSav) total += t.amount
@@ -93,6 +126,7 @@ export function totalBudget(
   totalSpent: Cents,
   month: MonthKey,
   today = todayISO(),
+  cycle = CALENDAR,
 ): TotalBudget | null {
   let budget = budgetFor(budgets, 'total', month)
   let implicit = false
@@ -103,12 +137,13 @@ export function totalBudget(
     budget = sum
     implicit = true
   }
-  const days = monthDayCount(month)
-  const isCurrent = month === currentMonth()
-  const isPast = month < monthOf(today)
-  const dayOfMonth = isCurrent ? Number(today.slice(8, 10)) : isPast ? days : 0
-  const elapsedPct = (dayOfMonth / days) * 100
-  const daysLeft = isCurrent ? daysBetween(today, monthEnd(month)) + 1 : isPast ? 0 : days
+  const r = periodRange(cycle, month)
+  const days = daysBetween(r.from, r.to) + 1
+  const isCurrent = inPeriod(today, r)
+  const isPast = today > r.to
+  const dayOfPeriod = isCurrent ? daysBetween(r.from, today) + 1 : isPast ? days : 0
+  const elapsedPct = (dayOfPeriod / days) * 100
+  const daysLeft = isCurrent ? daysBetween(today, r.to) + 1 : isPast ? 0 : days
   const pct = (totalSpent / budget) * 100
   const remaining = budget - totalSpent
   const perDay = daysLeft > 0 && remaining > 0 ? Math.floor(remaining / daysLeft) : null
@@ -117,14 +152,14 @@ export function totalBudget(
 }
 
 /** Promedio mensual gastado en una categoría (o total) en los N meses anteriores al mes dado. */
-export function averageSpent(txs: Transaction[], categoryId: string | 'total', month: MonthKey, months = 3): Cents {
+export function averageSpent(txs: Transaction[], categoryId: string | 'total', month: MonthKey, months = 3, cycle = CALENDAR): Cents {
   const from = new Set<string>()
   for (let i = 1; i <= months; i++) from.add(addMonths(month, -i))
   let sum = 0
   const seen = new Set<string>()
   for (const t of txs) {
     if (t.type !== 'expense') continue
-    const mk = monthOf(t.date)
+    const mk = periodOf(cycle, t.date)
     if (!from.has(mk)) continue
     if (categoryId !== 'total' && t.categoryId !== categoryId) continue
     sum += t.amount

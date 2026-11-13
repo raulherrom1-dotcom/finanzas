@@ -1,6 +1,7 @@
 import { db, setSetting } from '../db/db'
 import type { Account, Budget, Category, Goal, GoalContribution, Recurring, Setting, Transaction } from '../db/types'
 import { todayISO } from './dates'
+import { activeProfile, MAIN_PROFILE } from './profiles'
 
 // Respaldo completo en JSON. Se guarda en el celular (Archivos / iCloud) con la hoja de compartir.
 
@@ -23,6 +24,9 @@ export interface BackupFile {
   }
 }
 
+/** Ajustes que viajan en el respaldo; los demás son de este celular. */
+const BACKUP_SETTINGS = ['userName', 'payCycle']
+
 const TABLES = ['accounts', 'categories', 'transactions', 'budgets', 'recurring', 'goals', 'goalContributions', 'settings'] as const
 
 export async function buildBackup(): Promise<BackupFile> {
@@ -40,12 +44,15 @@ export async function buildBackup(): Promise<BackupFile> {
     app: BACKUP_APP,
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    data: { accounts, categories, transactions, budgets, recurring, goals, goalContributions, settings: settings.filter((s) => s.key === 'userName') },
+    data: { accounts, categories, transactions, budgets, recurring, goals, goalContributions, settings: settings.filter((s) => BACKUP_SETTINGS.includes(s.key)) },
   }
 }
 
 export function backupFileName(): string {
-  return `finanzas-respaldo-${todayISO()}.json`
+  const p = activeProfile()
+  // Con varios perfiles, el nombre evita que un respaldo reemplace al de otra persona en Archivos.
+  const who = p.id === MAIN_PROFILE ? '' : `-${p.name.replace(/[^\p{L}\p{N}]+/gu, '-')}`
+  return `finanzas-respaldo${who}-${todayISO()}.json`
 }
 
 /** Revisa que el archivo sea un respaldo de esta app antes de tocar nada. */
@@ -76,7 +83,7 @@ export async function restoreBackup(b: BackupFile) {
       const table = db.table(t)
       if (t === 'settings') {
         // Conserva fechas de respaldo y recordatorios de este celular
-        const rows = (b.data.settings ?? []).filter((s) => s.key === 'userName')
+        const rows = (b.data.settings ?? []).filter((s) => BACKUP_SETTINGS.includes(s.key))
         await table.bulkPut(rows)
         continue
       }

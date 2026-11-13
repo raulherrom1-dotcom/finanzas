@@ -8,29 +8,33 @@ import { CategoryIcon } from '../components/ui/CategoryIcon'
 import { ProgressBar, ProgressRing } from '../components/ui/Progress'
 import { TxRow } from '../components/TxRow'
 import { Button } from '../components/ui/Button'
-import { useSetting } from '../db/db'
+import { usePayCycle, useSetting } from '../db/db'
+import { activeProfile } from '../lib/profiles'
 import { byId } from '../db/queries'
 import { useFinance } from '../hooks/useFinance'
 import { useApp } from '../state/app'
 import { navigate } from '../lib/router'
-import { currentMonth, longDate, monthDayCount, monthName, relativeDays, shortDate, todayISO } from '../lib/dates'
-import { monthSavings, monthTotals, totalBudget } from '../lib/budget'
+import { daysBetween, longDate, monthEnd, monthName, relativeDays, shortDate, todayISO } from '../lib/dates'
+import { monthSavings, monthTotals, periodOf, periodRange, totalBudget } from '../lib/budget'
 import { goalViews, nearestGoal } from '../lib/goals'
 import { upcomingPayments } from '../lib/upcoming'
 import { cn } from '../lib/cn'
 import { BackupReminder } from '../features/backup/BackupReminder'
 
 export function Inicio() {
-  const name = useSetting('userName', 'Raúl')
+  const name = useSetting('userName', activeProfile().name)
   const { privacy, togglePrivacy, openQuickAdd } = useApp()
   const { txs, accounts, categories, budgets, recurring, goals, contributions, loaded } = useFinance()
   const money = useMoney()
-  const month = currentMonth()
+  const cycle = usePayCycle()
   const today = todayISO()
+  const month = periodOf(cycle, today)
+  const range = periodRange(cycle, month)
+  const periodName = range.from.endsWith('-01') && range.to === monthEnd(month) ? `de ${monthName(month)}` : `del ${shortDate(range.from)} al ${shortDate(range.to)}`
 
-  const totals = useMemo(() => monthTotals(txs, month), [txs, month])
-  const savings = useMemo(() => monthSavings(txs, contributions, accounts, month), [txs, contributions, accounts, month])
-  const total = useMemo(() => totalBudget(budgets, categories, totals.expense, month, today), [budgets, categories, totals.expense, month, today])
+  const totals = useMemo(() => monthTotals(txs, month, cycle), [txs, month, cycle])
+  const savings = useMemo(() => monthSavings(txs, contributions, accounts, month, cycle), [txs, contributions, accounts, month, cycle])
+  const total = useMemo(() => totalBudget(budgets, categories, totals.expense, month, today, cycle), [budgets, categories, totals.expense, month, today, cycle])
   const cats = useMemo(() => byId(categories), [categories])
   const accs = useMemo(() => byId(accounts), [accounts])
   const latest = useMemo(
@@ -40,8 +44,8 @@ export function Inicio() {
   const upcoming = useMemo(() => upcomingPayments(recurring, accounts, txs, today, 14).slice(0, 4), [recurring, accounts, txs, today])
   const goal = useMemo(() => nearestGoal(goalViews(goals, contributions, today)), [goals, contributions, today])
 
-  const day = Number(today.slice(8, 10))
-  const days = monthDayCount(month)
+  const day = daysBetween(range.from, today) + 1
+  const days = daysBetween(range.from, range.to) + 1
 
   return (
     <>
@@ -64,9 +68,9 @@ export function Inicio() {
         <BackupReminder />
 
         {/* Balance del mes: el elemento protagonista */}
-        <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance de ${monthName(month)}`}>
+        <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance ${periodName}`}>
           <HeroGlyph />
-          <p className="relative text-sm font-semibold">Balance de {monthName(month)}</p>
+          <p className="relative text-sm font-semibold">Balance {periodName}</p>
           <Amount cents={totals.balance} proportional className="relative mt-1 block text-2xl font-extrabold tracking-tight" />
 
           <div className="relative mt-4 grid grid-cols-2 gap-2">
@@ -96,7 +100,7 @@ export function Inicio() {
               </span>
             </ProgressRing>
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-muted">Presupuesto del mes</p>
+              <p className="text-sm text-muted">Presupuesto</p>
               {total.remaining >= 0 ? (
                 <p className="text-base font-bold">
                   Te quedan <Amount cents={total.remaining} className="font-extrabold" /> de {money(total.budget, { noCents: true })}

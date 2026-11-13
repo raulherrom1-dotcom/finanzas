@@ -1,6 +1,7 @@
 import type { ISODate } from '../../lib/dates'
 import type { PaymentMethod, TxType } from '../../db/types'
 import { readLocal, writeLocal } from '../../lib/storage'
+import { profileKey } from '../../lib/profiles'
 
 // Borrador del registro rápido: se guarda en cada tecla para no perder nada si se cierra la app.
 
@@ -15,8 +16,8 @@ export interface Draft {
   note: string
 }
 
-const KEY = 'finanzas:quickAddDraft'
-const LAST_ACCOUNT = 'finanzas:lastAccountId'
+const KEY = profileKey('quickAddDraft')
+const LAST_ACCOUNT = profileKey('lastAccountId')
 
 export function loadDraft(): Draft | null {
   return readLocal<Draft | null>(KEY, null)

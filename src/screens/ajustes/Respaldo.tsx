@@ -13,6 +13,7 @@ import { transactionsToCsv } from '../../lib/csv'
 import { daysBetween, longDate, todayISO } from '../../lib/dates'
 import { navigate } from '../../lib/router'
 import { useSaveBackup } from '../../features/backup/useBackupActions'
+import { activeProfile, listProfiles } from '../../lib/profiles'
 import { cn } from '../../lib/cn'
 
 export function Respaldo() {
@@ -25,6 +26,8 @@ export function Respaldo() {
   const [restore, setRestore] = useState<BackupFile | null>(null)
   const [confirm, setConfirm] = useState<null | 'removeSample' | 'wipe'>(null)
   const [busy, setBusy] = useState(false)
+  // Con varios perfiles, los avisos dicen de quién son los datos
+  const whose = listProfiles().length > 1 ? ` del perfil de ${activeProfile().name}` : ''
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(false))
@@ -135,7 +138,7 @@ export function Respaldo() {
         {restore && (
           <>
             Respaldo del {longDate(todayISO(new Date(restore.exportedAt))).toLowerCase()} con {restore.data.transactions?.length ?? 0} movimientos y{' '}
-            {restore.data.accounts?.length ?? 0} cuentas. <strong className="text-ink">Reemplaza todo lo que hay ahora en la app.</strong>
+            {restore.data.accounts?.length ?? 0} cuentas. <strong className="text-ink">Reemplaza todo lo que hay ahora{whose || ' en la app'}.</strong>
           </>
         )}
       </ConfirmSheet>
@@ -165,7 +168,7 @@ export function Respaldo() {
           location.reload()
         }}
       >
-        Se borran movimientos, cuentas, presupuestos, recurrentes y metas de este celular. No se puede deshacer: guarda un respaldo antes si lo podrías necesitar.
+        Se borran movimientos, cuentas, presupuestos, recurrentes y metas{whose || ' de este celular'}. No se puede deshacer: guarda un respaldo antes si lo podrías necesitar.
       </ConfirmSheet>
     </>
   )

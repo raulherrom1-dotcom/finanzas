@@ -1,6 +1,8 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES } from './defaults'
+import { activeProfile, dbNameFor } from '../lib/profiles'
+import { CALENDAR, type PayCycle } from '../lib/budget'
 import type { Account, Budget, Category, Goal, GoalContribution, Recurring, Setting, Transaction } from './types'
 
 class FinanzasDB extends Dexie {
@@ -14,7 +16,7 @@ class FinanzasDB extends Dexie {
   settings!: EntityTable<Setting, 'key'>
 
   constructor() {
-    super('finanzas')
+    super(dbNameFor(activeProfile().id))
     this.version(1).stores({
       accounts: 'id, order',
       categories: 'id, kind, order',
@@ -44,7 +46,7 @@ export function newId(): string {
 
 // ---- Ajustes (clave/valor) ----
 
-export type SettingKey = 'userName' | 'lastBackupAt' | 'backupReminderSnoozedUntil' | 'lastRecurringRun' | 'firstOpenedAt'
+export type SettingKey = 'userName' | 'payCycle' | 'lastBackupAt' | 'backupReminderSnoozedUntil' | 'lastRecurringRun' | 'firstOpenedAt'
 
 export async function getSetting<T>(key: SettingKey, fallback: T): Promise<T> {
   const row = await db.settings.get(key)
@@ -60,4 +62,9 @@ export function useSetting<T>(key: SettingKey, fallback: T): T {
     const row = await db.settings.get(key)
     return row === undefined ? fallback : (row.value as T)
   }, [key], fallback) as T
+}
+
+/** Día de pago y fechas en que empezó cada periodo del presupuesto. */
+export function usePayCycle(): PayCycle {
+  return useSetting<PayCycle>('payCycle', CALENDAR)
 }

@@ -97,6 +97,28 @@ iOS puede borrar los datos de apps web que no se abren en varias semanas. Para n
 
 No subas tus respaldos a este repositorio.
 
+## 6. Perfiles (varias personas en el mismo celular)
+
+**Ajustes → Perfiles** permite que otra persona use la app en tu celular con sus propios datos.
+
+- **Agregar perfil:** escribe el nombre y toca **Crear y cambiar a este perfil**. Empieza vacío, con las categorías y la cuenta de efectivo de siempre.
+- **Cambiar de perfil:** toca su nombre en la lista. La app se recarga y abre los datos de esa persona.
+- Cada perfil tiene sus propias cuentas, movimientos, presupuestos, recurrentes, metas y respaldos.
+  El respaldo de otro perfil lleva su nombre en el archivo (`finanzas-respaldo-Ana-AAAA-MM-DD.json`), y al restaurar
+  solo se reemplaza el perfil en el que estás.
+- **Borrar un perfil** borra todos sus datos. El perfil principal (el primero) no se puede borrar.
+- Los perfiles no tienen contraseña: cualquiera con el celular puede entrar a cualquiera.
+
+## 7. Periodo del presupuesto (día de pago)
+
+Si no te pagan el día 1, en **Presupuesto** toca **Cambiar** debajo del mes:
+
+- **Normalmente me pagan el:** el día de pago habitual (por ejemplo, 10). El periodo va de ese día hasta un día antes del siguiente pago.
+- **El periodo empieza el:** si un mes te pagan otro día (por ejemplo, el 13), cambia la fecha solo para ese periodo.
+
+Inicio y Presupuesto usan ese periodo; Movimientos y Análisis siguen usando meses de calendario.
+Cada perfil tiene su propio día de pago.
+
 ## Cómo está hecha
 
 - **Montos en centavos enteros** (`$1,234.50` se guarda como `123450`) para evitar errores de redondeo.

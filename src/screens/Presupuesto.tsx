@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Gauge, Pencil, Plus } from 'lucide-react'
+import { CalendarDays, Gauge, Pencil, Plus } from 'lucide-react'
 import { ScreenHeader, SectionTitle } from '../components/ui/ScreenHeader'
 import { Callout, EmptyState } from '../components/ui/Callout'
 import { Button, IconButton } from '../components/ui/Button'
@@ -8,24 +8,32 @@ import { CategoryIcon } from '../components/ui/CategoryIcon'
 import { ProgressBar, ProgressRing } from '../components/ui/Progress'
 import { MonthSwitcher } from '../components/MonthSwitcher'
 import { BudgetSheet, type BudgetTarget } from './BudgetSheet'
+import { PeriodSheet } from './PeriodSheet'
+import { usePayCycle } from '../db/db'
 import { useFinance } from '../hooks/useFinance'
-import { averageSpent, budgetFor, categoryBudgetLines, monthTotals, spentByCategory, totalBudget, type TotalBudget } from '../lib/budget'
-import { currentMonth } from '../lib/dates'
+import { averageSpent, budgetFor, categoryBudgetLines, monthTotals, periodOf, periodRange, spentByCategory, totalBudget, type TotalBudget } from '../lib/budget'
+import { shortDate, todayISO } from '../lib/dates'
 import { cn } from '../lib/cn'
 
-let rememberedMonth = currentMonth()
+let rememberedMonth: string | null = null
 
 export function Presupuesto() {
   const { txs, categories, budgets, loaded } = useFinance()
-  const [month, setMonthState] = useState(rememberedMonth)
-  const setMonth = (m: string) => setMonthState((rememberedMonth = m))
+  const cycle = usePayCycle()
+  const today = todayISO()
+  const now = periodOf(cycle, today)
+  const [picked, setPicked] = useState(rememberedMonth)
+  const month = picked ?? now
+  const setMonth = (m: string) => setPicked((rememberedMonth = m))
   const [target, setTarget] = useState<BudgetTarget | null>(null)
+  const [periodOpen, setPeriodOpen] = useState(false)
   const money = useMoney()
+  const range = periodRange(cycle, month)
 
-  const spent = useMemo(() => spentByCategory(txs, month), [txs, month])
-  const totals = useMemo(() => monthTotals(txs, month), [txs, month])
+  const spent = useMemo(() => spentByCategory(txs, month, cycle), [txs, month, cycle])
+  const totals = useMemo(() => monthTotals(txs, month, cycle), [txs, month, cycle])
   const lines = useMemo(() => categoryBudgetLines(categories, budgets, spent, month), [categories, budgets, spent, month])
-  const total = useMemo(() => totalBudget(budgets, categories, totals.expense, month), [budgets, categories, totals.expense, month])
+  const total = useMemo(() => totalBudget(budgets, categories, totals.expense, month, today, cycle), [budgets, categories, totals.expense, month, today, cycle])
 
   const unbudgeted = categories
     .filter((c) => c.kind === 'expense' && budgetFor(budgets, c.id, month) === null && (spent.get(c.id) ?? 0) > 0)
@@ -37,7 +45,7 @@ export function Presupuesto() {
       month={month}
       categories={categories}
       current={(id) => budgetFor(budgets, id, month)}
-      average={(id) => averageSpent(txs, id, month)}
+      average={(id) => averageSpent(txs, id, month, 3, cycle)}
       onClose={() => setTarget(null)}
     />
   )
@@ -55,7 +63,15 @@ export function Presupuesto() {
         }
       />
       <div className="px-4">
-        <MonthSwitcher className="mb-4" month={month} onChange={setMonth} />
+        <MonthSwitcher className="mb-1" month={month} now={now} onChange={setMonth} />
+        <button
+          type="button"
+          onClick={() => setPeriodOpen(true)}
+          className="mb-4 flex min-h-11 w-full items-center justify-center gap-1.5 text-sm font-semibold text-muted"
+        >
+          <CalendarDays size={15} />
+          Del {shortDate(range.from)} al {shortDate(range.to)} ·<span className="font-bold text-accent-press">Cambiar</span>
+        </button>
 
         {!total && lines.length === 0 ? (
           <EmptyState
@@ -74,7 +90,7 @@ export function Presupuesto() {
           </EmptyState>
         ) : (
           <>
-            {total && <TotalCard total={total} month={month} onEdit={() => setTarget({ kind: 'total' })} />}
+            {total && <TotalCard total={total} isCurrent={month === now} onEdit={() => setTarget({ kind: 'total' })} />}
             {!total && (
               <Callout className="mb-5" action={<Button size="sm" onClick={() => setTarget({ kind: 'total' })}>Poner presupuesto total</Button>}>
                 Aún no tienes un presupuesto total para el mes.
@@ -137,6 +153,7 @@ export function Presupuesto() {
         )}
       </div>
       {sheet}
+      <PeriodSheet open={periodOpen} month={month} cycle={cycle} onClose={() => setPeriodOpen(false)} />
     </>
   )
 }
@@ -153,14 +170,13 @@ function LeftLabel({ remaining, level }: { remaining: number; level: 'ok' | 'war
 }
 
 const PACE: Record<TotalBudget['pace'], { text: string; box: string }> = {
-  ahead: { text: 'Vas gastando más rápido de lo que avanza el mes.', box: 'bg-warn-soft text-warn-ink' },
-  on: { text: 'Vas al ritmo del mes.', box: 'bg-info text-info-ink' },
-  under: { text: 'Vas por debajo del ritmo del mes. Bien.', box: 'bg-pos-soft text-pos-ink' },
+  ahead: { text: 'Vas gastando más rápido de lo que avanza el periodo.', box: 'bg-warn-soft text-warn-ink' },
+  on: { text: 'Vas al ritmo del periodo.', box: 'bg-info text-info-ink' },
+  under: { text: 'Vas por debajo del ritmo del periodo. Bien.', box: 'bg-pos-soft text-pos-ink' },
 }
 
-function TotalCard({ total, month, onEdit }: { total: TotalBudget; month: string; onEdit: () => void }) {
+function TotalCard({ total, isCurrent, onEdit }: { total: TotalBudget; isCurrent: boolean; onEdit: () => void }) {
   const money = useMoney()
-  const isCurrent = month === currentMonth()
   const over = total.level === 'over'
   return (
     <section className="card p-5">
@@ -184,7 +200,7 @@ function TotalCard({ total, month, onEdit }: { total: TotalBudget; month: string
         </p>
       )}
       {over ? (
-        <p className="mt-3 rounded-2xl bg-neg-soft px-4 py-3 text-sm font-semibold text-neg-ink">Ya pasaste tu presupuesto del mes.</p>
+        <p className="mt-3 rounded-2xl bg-neg-soft px-4 py-3 text-sm font-semibold text-neg-ink">Ya pasaste tu presupuesto del periodo.</p>
       ) : total.level === 'warn' ? (
         <p className="mt-3 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-semibold text-warn-ink">Llevas más del 80% de tu presupuesto.</p>
       ) : (

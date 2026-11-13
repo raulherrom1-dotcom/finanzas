@@ -8,7 +8,7 @@ const ITEMS: Array<{ path: string; label: string; hint: string; icon: LucideIcon
   { path: '/ajustes/recurrentes', label: 'Recurrentes', hint: 'Renta, suscripciones, sueldo', icon: Repeat },
   { path: '/ajustes/metas', label: 'Metas de ahorro', hint: 'Objetivos y abonos', icon: Target },
   { path: '/ajustes/respaldo', label: 'Respaldo y datos', hint: 'Exportar, importar y datos de ejemplo', icon: DatabaseBackup },
-  { path: '/ajustes/perfil', label: 'Tu nombre', hint: 'Cómo te saluda la app', icon: UserRound },
+  { path: '/ajustes/perfil', label: 'Perfiles', hint: 'Tu nombre y otras personas en este celular', icon: UserRound },
 ]
 
 export function Ajustes() {

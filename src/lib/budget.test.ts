@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Account, Budget, Category, Transaction } from '../db/types'
-import { averageSpent, budgetFor, categoryBudgetLines, monthSavings, monthTotals, spentByCategory, totalBudget } from './budget'
+import { averageSpent, budgetFor, categoryBudgetLines, monthSavings, monthTotals, periodOf, periodRange, spentByCategory, totalBudget } from './budget'
 
 const b = (categoryId: string, amount: number, fromMonth: string): Budget => ({ id: `${categoryId}:${fromMonth}`, categoryId, amount, fromMonth })
 const t = (p: Partial<Transaction>): Transaction => ({ id: Math.random().toString(), type: 'expense', amount: 0, date: '2026-10-05', createdAt: 0, updatedAt: 0, ...p })
@@ -75,5 +75,29 @@ describe('resumen del mes', () => {
   it('promedio de los meses anteriores', () => {
     const hist = [t({ amount: 30000, date: '2026-07-03' }), t({ amount: 10000, date: '2026-09-03' }), t({ amount: 999999, date: '2026-10-01' })]
     expect(averageSpent(hist, 'total', '2026-10')).toBe(20000)
+  })
+})
+
+describe('periodo según día de pago', () => {
+  const c = { payDay: 10, starts: { '2026-11': '2026-11-13' } }
+  it('empieza el día de pago y respeta los meses en que pagaron otro día', () => {
+    expect(periodRange(c, '2026-10')).toEqual({ from: '2026-10-10', to: '2026-11-12' })
+    expect(periodRange(c, '2026-11')).toEqual({ from: '2026-11-13', to: '2026-12-09' })
+    expect(periodOf(c, '2026-11-05')).toBe('2026-10')
+    expect(periodOf(c, '2026-11-13')).toBe('2026-11')
+    expect(periodOf(c, '2026-12-09')).toBe('2026-11')
+    expect(periodOf(c, '2026-12-10')).toBe('2026-12')
+  })
+  it('día 31 en meses cortos usa el último día', () => {
+    expect(periodRange({ payDay: 31, starts: {} }, '2027-02')).toEqual({ from: '2027-02-28', to: '2027-03-30' })
+  })
+  it('suma y calcula ritmo dentro del periodo', () => {
+    const txs = [t({ amount: 100, date: '2026-11-12' }), t({ amount: 200, date: '2026-11-13' }), t({ amount: 400, date: '2026-12-09' })]
+    expect(monthTotals(txs, '2026-11', c).expense).toBe(600)
+    expect(monthTotals(txs, '2026-10', c).expense).toBe(100)
+    // 13 nov – 9 dic = 27 días; hoy 14 nov → quedan 26
+    const tb = totalBudget([b('total', 270000, '2026-11')], [], 0, '2026-11', '2026-11-14', c)!
+    expect(tb.daysLeft).toBe(26)
+    expect(Math.round(tb.elapsedPct)).toBe(7)
   })
 })
