@@ -52,8 +52,8 @@ export function Inicio() {
       <header className="pt-safe px-4 pb-4">
         <div className="flex items-center gap-1">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-muted">{longDate(today)}</p>
-            <h1 className="text-gradient truncate text-xl font-bold tracking-tight">Hola, {name}</h1>
+            <h1 className="truncate text-xl font-extrabold tracking-tight">Hola, {name}</h1>
+            <p className="text-sm text-muted">{longDate(today)}</p>
           </div>
           <IconButton label={privacy ? 'Mostrar montos' : 'Ocultar montos'} tone={privacy ? 'soft' : 'surface'} onClick={togglePrivacy} aria-pressed={privacy}>
             {privacy ? <EyeOff size={20} strokeWidth={2.2} /> : <Eye size={20} strokeWidth={2.2} />}
@@ -64,14 +64,14 @@ export function Inicio() {
         </div>
       </header>
 
-      <div className="stagger space-y-4 px-4">
+      <div className="space-y-4 px-4">
         <BackupReminder />
 
         {/* Balance del mes: el elemento protagonista */}
-        <section className="hero-gradient relative overflow-hidden rounded-hero border border-white/15 p-5 text-white shadow-hero" aria-label={`Balance ${periodName}`}>
+        <section className="hero-gradient relative overflow-hidden rounded-hero p-5 text-white shadow-hero" aria-label={`Balance ${periodName}`}>
           <HeroGlyph />
-          <p className="relative inline-flex rounded-full bg-white/12 px-3 py-1 text-[13px] font-semibold ring-1 ring-white/15 ring-inset">Balance {periodName}</p>
-          <Amount cents={totals.balance} proportional className="relative mt-3 block text-[46px] leading-[50px] font-semibold" />
+          <p className="relative text-sm font-semibold">Balance {periodName}</p>
+          <Amount cents={totals.balance} proportional className="relative mt-1 block text-2xl font-extrabold tracking-tight" />
 
           <div className="relative mt-4 grid grid-cols-2 gap-2">
             <HeroStat icon={ArrowDownLeft} label="Entró" cents={totals.income} />
@@ -127,7 +127,7 @@ export function Inicio() {
         <div className="grid grid-cols-3 gap-2.5">
           <StatTile icon={ArrowDownLeft} label="Ingresos" cents={totals.income} tone="pos" iconClass="bg-pos-soft text-pos-ink" />
           <StatTile icon={ArrowUpRight} label="Gastos" cents={totals.expense} tone="ink" iconClass="bg-accent-soft text-accent-press" />
-          <StatTile icon={PiggyBank} label="Ahorro" cents={savings} tone="ink" iconClass="bg-accent-soft text-accent-light" />
+          <StatTile icon={PiggyBank} label="Ahorro" cents={savings} tone="ink" iconClass="bg-accent-soft text-accent" />
         </div>
 
         {/* Últimos movimientos */}
@@ -227,9 +227,9 @@ export function Inicio() {
                     {goal.goal.deadline ? `Para el ${shortDate(goal.goal.deadline)} ${goal.goal.deadline.slice(0, 4)}` : 'Sin fecha'}
                   </p>
                 </div>
-                <span className="num-prop text-xl font-semibold text-pos-ink">{Math.floor(goal.pct)}%</span>
+                <span className="num text-lg font-extrabold text-accent-press">{Math.floor(goal.pct)}%</span>
               </div>
-              <ProgressBar pct={goal.pct} color="linear-gradient(90deg, #34d399, #22d3ee)" />
+              <ProgressBar pct={goal.pct} color="var(--color-accent)" />
               <p className="mt-2 text-sm text-muted">
                 <span className="font-bold text-ink">{money(goal.saved)}</span> de {money(goal.goal.target)}
                 {goal.perMonth ? `. Ahorra ${money(goal.perMonth, { noCents: true })} al mes para llegar.` : ''}
@@ -250,7 +250,7 @@ export function Inicio() {
 
 function HeroStat({ icon: Icon, label, cents }: { icon: LucideIcon; label: string; cents: number }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2.5 ring-1 ring-white/15 ring-inset">
+    <div className="flex items-center gap-2 rounded-2xl bg-ink/15 px-3 py-2.5">
       <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15">
         <Icon size={17} strokeWidth={2.4} />
       </span>
@@ -267,9 +267,9 @@ function PaceTrack({ spentPct, elapsedPct }: { spentPct: number; elapsedPct: num
   const w = Math.max(0, Math.min(100, spentPct))
   const ahead = spentPct > elapsedPct + 8
   return (
-    <div className="relative h-2 rounded-full bg-white/20" aria-hidden>
-      <div className={cn('animate-fill-x absolute inset-y-0 left-0 rounded-full', ahead ? 'bg-warn' : 'bg-linear-to-r from-white/70 to-white')} style={{ width: `${w}%` }} />
-      <div className="absolute -top-1.5 h-5 w-[3px] -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_2px_rgba(58,31,184,0.7),0_0_12px_rgba(255,255,255,0.8)]" style={{ left: `${elapsedPct}%` }} />
+    <div className="relative h-2 rounded-full bg-white/25" aria-hidden>
+      <div className={cn('animate-fill-x absolute inset-y-0 left-0 rounded-full', ahead ? 'bg-warn' : 'bg-white')} style={{ width: `${w}%` }} />
+      <div className="absolute -top-1.5 h-5 w-[3px] -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_2px_rgba(59,91,255,0.6)]" style={{ left: `${elapsedPct}%` }} />
     </div>
   )
 }

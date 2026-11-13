@@ -5,11 +5,11 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'surface'
 type Size = 'sm' | 'md' | 'lg'
 
 const VARIANT: Record<Variant, string> = {
-  primary: 'btn-primary',
-  secondary: 'bg-accent-soft text-accent-press ring-1 ring-inset ring-accent-light/25 active:bg-line',
+  primary: 'bg-accent text-white active:bg-accent-press disabled:bg-accent-soft disabled:text-accent-press',
+  secondary: 'bg-accent-soft text-accent-press active:bg-line',
   ghost: 'bg-transparent text-accent-press active:bg-accent-soft',
   danger: 'bg-neg-soft text-neg-ink active:brightness-95',
-  surface: 'bg-white/[0.06] text-ink border border-white/10 active:bg-white/10',
+  surface: 'bg-surface text-ink border border-line active:bg-accent-soft',
 }
 
 const SIZE: Record<Size, string> = {
@@ -64,8 +64,8 @@ export function IconButton({
       title={label}
       className={cn(
         'inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-[transform,background-color] duration-150 active:scale-95',
-        tone === 'plain' && 'text-ink active:bg-white/10',
-        tone === 'surface' && 'border border-white/10 bg-white/[0.06] text-ink active:bg-white/10',
+        tone === 'plain' && 'text-ink active:bg-surface',
+        tone === 'surface' && 'border border-line bg-surface text-ink active:bg-accent-soft',
         tone === 'soft' && 'bg-accent-soft text-accent-press active:bg-line',
         tone === 'onAccent' && 'bg-white/15 text-white active:bg-white/25',
         className,

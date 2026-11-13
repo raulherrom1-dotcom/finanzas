@@ -70,7 +70,7 @@ export function Perfil() {
           <SectionTitle>Perfiles en este celular</SectionTitle>
           <ul className="overflow-hidden rounded-card border border-line bg-surface">
             <li className="flex min-h-16 items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-              <span className="flex size-10 items-center justify-center btn-primary rounded-full">
+              <span className="flex size-10 items-center justify-center rounded-full bg-accent text-white">
                 <Check size={20} strokeWidth={2.4} />
               </span>
               <span className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ export function Perfil() {
             {others.map((p) => (
               <li key={p.id} className="flex items-center gap-1 border-b border-line pr-2 last:border-b-0">
                 <button type="button" onClick={() => switchProfile(p.id)} className="flex min-h-16 min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left active:bg-accent-soft">
-                  <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-light">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent">
                     <UserRound size={20} strokeWidth={2.2} />
                   </span>
                   <span className="min-w-0 flex-1">

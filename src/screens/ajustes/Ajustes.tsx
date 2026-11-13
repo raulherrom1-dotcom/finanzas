@@ -19,7 +19,7 @@ export function Ajustes() {
         {ITEMS.map(({ path, label, hint, icon: Icon }) => (
           <li key={path} className="border-b border-line last:border-b-0">
             <button type="button" onClick={() => navigate(path)} className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left active:bg-accent-soft">
-              <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-light">
+              <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent">
                 <Icon size={20} strokeWidth={2.2} />
               </span>
               <span className="min-w-0 flex-1">

@@ -25,14 +25,14 @@ export function Toaster() {
     >
       <div
         key={toast.id}
-        className="animate-toast-in pointer-events-auto flex max-w-[420px] min-h-12 items-center gap-3 glass rounded-full py-2 pr-2 pl-4 text-sm font-semibold text-ink shadow-card"
+        className="animate-toast-in pointer-events-auto flex max-w-[420px] min-h-12 items-center gap-3 rounded-full bg-ink py-2 pr-2 pl-4 text-sm font-semibold text-white shadow-float"
       >
         <Icon size={20} strokeWidth={2.4} className={cn('shrink-0', toast.tone === 'error' ? 'text-neg' : toast.tone === 'info' ? 'text-accent-light' : 'text-pos')} />
         <span className="py-1 pr-2">{toast.text}</span>
         {toast.action && (
           <button
             type="button"
-            className="h-11 rounded-full bg-white/10 px-4 font-bold text-accent-press active:bg-white/20"
+            className="h-11 rounded-full bg-white/15 px-4 font-bold text-white active:bg-white/25"
             onClick={() => {
               toast.action?.run()
               dismissToast()

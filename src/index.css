@@ -1,48 +1,40 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
-@import '@fontsource-variable/outfit/wght.css';
 
 /*
- * Tema "Medianoche aurora": oscuro profundo con resplandores violeta y cian y tarjetas de vidrio.
+ * Tokens de diseño. Se reinicia la paleta de Tailwind para que solo existan estos colores.
  * Contraste medido (WCAG):
- *   ink sobre bg 17.9:1 · muted sobre bg 8.0:1 y sobre surface 7.2:1
- *   accent-press (texto de acento) sobre bg 9.8:1 y sobre accent-soft 7.7:1
- *   blanco sobre accent 4.9:1 (botones) · info-ink sobre info 9.3:1
- *   pos/warn/neg-ink sobre su fondo suave ≥8.7:1; los colores puros van en barras, íconos y fondos.
- * Nota: `accent-press` se llama así por historia; en este tema es el acento claro para TEXTO.
+ *   ink sobre blanco 16.9:1 · muted sobre blanco 4.4:1 · info-ink sobre info 9.0:1
+ *   blanco sobre accent 5.1:1 · accent-press sobre accent-soft 6.0:1
+ *   pos/warn/neg como texto no alcanzan 4.5:1, así que el texto usa *-ink (≥4.8:1)
+ *   y los colores puros se usan en barras, íconos, puntos y fondos.
  */
 @theme {
   --color-*: initial;
   --color-white: #ffffff;
-  --color-black: #000000;
-  --color-bg: #080c1d;
-  --color-surface: #121833;
-  --color-elev: #161d3b;
-  --color-line: #262f55;
-  --color-line-strong: #3a4578;
-  --color-info: #13223f;
-  --color-info-ink: #a9c7ff;
-  --color-ink: #f3f5ff;
-  --color-muted: #9ba5c9;
-  --color-accent: #6d52ff;
-  --color-accent-press: #b9afff;
-  --color-accent-soft: #231f52;
-  --color-accent-light: #8c7bff;
-  --color-cyan: #22d3ee;
-  --color-pink: #e879f9;
-  --color-pos: #34d399;
-  --color-pos-soft: #0c2b27;
-  --color-pos-ink: #6ee7b7;
-  --color-warn: #fbbf24;
-  --color-warn-soft: #2e2410;
-  --color-warn-ink: #fcd34d;
-  --color-neg: #fb7185;
-  --color-neg-soft: #35141f;
-  --color-neg-ink: #fda4af;
+  --color-bg: #ffffff;
+  --color-surface: #f4f7fe;
+  --color-line: #e3eaf8;
+  --color-info: #e8f0fe;
+  --color-info-ink: #1f3a8a;
+  --color-ink: #0f1b3d;
+  --color-muted: #6b7894;
+  --color-accent: #3b5bff;
+  --color-accent-press: #2b47d6;
+  --color-accent-soft: #e6ecff;
+  --color-accent-light: #6c8cff;
+  --color-pos: #10b981;
+  --color-pos-soft: #e3f8f0;
+  --color-pos-ink: #047857;
+  --color-warn: #f5a524;
+  --color-warn-soft: #fef3dc;
+  --color-warn-ink: #9a5b00;
+  --color-neg: #f2545b;
+  --color-neg-soft: #feecec;
+  --color-neg-ink: #c42f37;
 
   --font-*: initial;
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: 'Outfit Variable', 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
   /* Escala tipográfica: 13 / 15 / 17 / 22 / 28 / 40 */
   --text-*: initial;
@@ -59,16 +51,15 @@
   --text-2xl: 40px;
   --text-2xl--line-height: 44px;
 
-  --radius-card: 22px;
-  --radius-hero: 28px;
-  --radius-sheet: 30px;
+  --radius-card: 20px;
+  --radius-hero: 24px;
+  --radius-sheet: 28px;
 
   --shadow-*: initial;
-  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.35);
-  --shadow-float: 0 10px 30px rgba(109, 82, 255, 0.5);
-  --shadow-sheet: 0 -20px 60px rgba(0, 0, 0, 0.55);
-  --shadow-hero: 0 24px 60px rgba(76, 55, 230, 0.45);
-  --shadow-glow: 0 0 24px rgba(140, 123, 255, 0.55);
+  --shadow-card: 0 8px 24px rgba(59, 91, 255, 0.08);
+  --shadow-float: 0 10px 28px rgba(59, 91, 255, 0.32);
+  --shadow-sheet: 0 -12px 40px rgba(15, 27, 61, 0.12);
+  --shadow-hero: 0 16px 32px rgba(59, 91, 255, 0.28);
 
   --ease-out-quick: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.32, 1.28, 0.6, 1);
@@ -89,7 +80,7 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --nav-height: 64px;
 
-  color-scheme: dark only;
+  color-scheme: light only;
 }
 
 @layer base {
@@ -99,6 +90,7 @@
     margin: 0;
     overflow: hidden;
     overscroll-behavior: none;
+    background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -107,26 +99,13 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Resplandores fijos detrás de todo (la página no hace scroll, solo el contenedor principal). */
-  body {
-    background:
-      radial-gradient(90% 55% at 100% -8%, rgba(124, 97, 255, 0.34), transparent 62%),
-      radial-gradient(70% 45% at -15% 12%, rgba(34, 211, 238, 0.16), transparent 60%),
-      radial-gradient(80% 50% at 50% 115%, rgba(232, 121, 249, 0.12), transparent 60%),
-      var(--color-bg);
-  }
-
+  /* El documento no se mueve; solo el contenedor principal hace scroll (sin rebote). */
   #root {
     position: fixed;
     inset: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  h1,
-  h2 {
-    font-family: var(--font-display);
   }
 
   button {
@@ -142,18 +121,13 @@
     font-size: max(16px, 1em);
   }
 
-  input[type='date'] {
-    color-scheme: dark;
-  }
-
   :focus-visible {
-    outline: 2px solid var(--color-accent-press);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--color-accent);
-    color: white;
+    background: var(--color-accent-soft);
   }
 }
 
@@ -178,93 +152,28 @@
     display: none;
   }
 
-  /* Cifras tabulares para columnas y listas; proporcionales (y con la letra de títulos) para montos grandes y solos. */
+  /* Cifras tabulares para columnas y listas; proporcionales para montos grandes y solos. */
   .num {
     font-variant-numeric: tabular-nums lining-nums;
   }
   .num-prop {
-    font-family: var(--font-display);
     font-variant-numeric: proportional-nums lining-nums;
-    letter-spacing: -0.02em;
   }
 
-  /* Tarjeta de vidrio: sin desenfoque (detrás solo hay fondo liso) para que el scroll vaya fluido. */
   .card {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)) var(--color-surface);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      var(--shadow-card);
+    box-shadow: var(--shadow-card);
   }
 
-  /* Vidrio esmerilado para lo que flota sobre el contenido (barra inferior, toasts). */
-  .glass {
-    background: rgba(22, 29, 59, 0.72);
-    -webkit-backdrop-filter: blur(22px) saturate(170%);
-    backdrop-filter: blur(22px) saturate(170%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  /* Botón principal: degradado violeta con brillo. Blanco sobre él ≥4.9:1. */
-  .btn-primary {
-    background: linear-gradient(135deg, #6d52ff 0%, #4f5bff 100%);
-    color: white;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      0 8px 24px rgba(109, 82, 255, 0.45);
-  }
-  .btn-primary:active {
-    filter: brightness(0.9);
-  }
-  .btn-primary:disabled {
-    background: var(--color-accent-soft);
-    color: var(--color-muted);
-    box-shadow: none;
-    filter: none;
-  }
-
-  /* Aurora de la tarjeta de balance. El texto blanco mide ≥4.6:1 en la zona más clara. */
   .hero-gradient {
-    isolation: isolate;
-    background: linear-gradient(140deg, #3a1fb8 0%, #2b34c4 50%, #1e3aa8 100%);
-  }
-  .hero-gradient::before,
-  .hero-gradient::after {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    border-radius: 9999px;
-    filter: blur(36px);
-    pointer-events: none;
-  }
-  .hero-gradient::before {
-    width: 70%;
-    height: 85%;
-    top: -35%;
-    right: -20%;
-    background: rgba(232, 121, 249, 0.4);
-    animation: aurora-a 14s ease-in-out infinite alternate;
-  }
-  .hero-gradient::after {
-    width: 65%;
-    height: 70%;
-    bottom: -40%;
-    left: -15%;
-    background: rgba(34, 211, 238, 0.32);
-    animation: aurora-b 17s ease-in-out infinite alternate;
-  }
-
-  .text-gradient {
-    background: linear-gradient(100deg, #f3f5ff 0%, #b9afff 55%, #7ee8fa 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    background: linear-gradient(60deg, #3b5bff 0%, #3b5bff 58%, #6c8cff 100%);
   }
 }
 
 @utility pb-nav {
-  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 40px);
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 28px);
 }
 
 @utility pt-safe {
@@ -272,26 +181,10 @@
 }
 
 /* Movimiento: rápido y sutil. Se apaga con "Reducir movimiento". */
-@keyframes aurora-a {
-  to {
-    transform: translate(-18%, 22%) scale(1.15);
-  }
-}
-@keyframes aurora-b {
-  to {
-    transform: translate(25%, -18%) scale(1.1);
-  }
-}
 @keyframes screen-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
-  }
-}
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.98);
+    transform: translateY(8px);
   }
 }
 @keyframes fade-in {
@@ -340,32 +233,13 @@
 }
 
 .animate-screen-in {
-  animation: screen-in 260ms var(--ease-out-quick) both;
-}
-/* Entrada escalonada: cada hijo directo aparece 45 ms después del anterior. */
-.stagger > * {
-  animation: rise 420ms var(--ease-out-quick) both;
-}
-.stagger > :nth-child(2) {
-  animation-delay: 45ms;
-}
-.stagger > :nth-child(3) {
-  animation-delay: 90ms;
-}
-.stagger > :nth-child(4) {
-  animation-delay: 135ms;
-}
-.stagger > :nth-child(5) {
-  animation-delay: 180ms;
-}
-.stagger > :nth-child(n + 6) {
-  animation-delay: 220ms;
+  animation: screen-in 220ms var(--ease-out-quick) both;
 }
 .animate-fade-in {
   animation: fade-in 200ms ease-out both;
 }
 .animate-sheet-up {
-  animation: sheet-up 340ms var(--ease-out-quick) both;
+  animation: sheet-up 320ms var(--ease-out-quick) both;
 }
 .animate-pop {
   animation: pop 360ms var(--ease-spring) both;
@@ -393,31 +267,6 @@
   *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
-    animation-delay: 0ms !important;
     transition-duration: 1ms !important;
   }
-}
-
-/* Las tarjetas tocables se hunden un poco al presionarlas (el degradado no deja ver el cambio de color). */
-button.card {
-  transition: transform 150ms var(--ease-out-quick);
-}
-button.card:active {
-  transform: scale(0.985);
-}
-
-/*
- * Fuera de capas a propósito: gana sobre las clases de peso de Tailwind. Outfit en 800 se ve
- * empastada, así que títulos y montos grandes usan pesos medios con la letra un poco cerrada.
- */
-h1,
-h2 {
-  font-weight: 700;
-  letter-spacing: -0.015em;
-}
-h2 {
-  font-weight: 650;
-}
-.num-prop {
-  font-weight: 600;
 }

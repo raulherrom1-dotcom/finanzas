@@ -158,7 +158,7 @@ function CategoryForm({ category, defaultKind, onClose }: { category?: Category;
         <IconPicker value={icon} color={color} onChange={setIcon} />
       </div>
 
-      <div className="sticky bottom-0 -mx-5 bg-elev px-5 pt-2 pb-1">
+      <div className="sticky bottom-0 -mx-5 bg-bg px-5 pt-2 pb-1">
         <Button size="lg" block onClick={save}>
           {category ? 'Guardar cambios' : 'Crear categoría'}
         </Button>

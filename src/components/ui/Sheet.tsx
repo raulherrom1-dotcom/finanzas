@@ -105,7 +105,7 @@ export function Sheet({
   return createPortal(
     <div className="fixed inset-0 z-50" role="presentation">
       <div
-        className={cn('absolute inset-0 bg-black/60 backdrop-blur-[3px] transition-opacity duration-200', closing ? 'opacity-0' : 'animate-fade-in')}
+        className={cn('absolute inset-0 bg-ink/40 transition-opacity duration-200', closing ? 'opacity-0' : 'animate-fade-in')}
         onClick={onClose}
       />
       <div
@@ -115,7 +115,7 @@ export function Sheet({
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
         className={cn(
-          'absolute inset-x-0 mx-auto flex max-w-[560px] flex-col rounded-t-(--radius-sheet) border-t border-white/10 bg-elev shadow-sheet outline-none',
+          'absolute inset-x-0 mx-auto flex max-w-[560px] flex-col rounded-t-(--radius-sheet) bg-bg shadow-sheet outline-none',
           !closing && dragY === 0 && 'animate-sheet-up',
           className,
         )}
@@ -133,7 +133,7 @@ export function Sheet({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <div className="mx-auto h-1.5 w-10 rounded-full bg-line-strong" />
+          <div className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           {!hideHeader && (
             <div className="flex min-h-12 items-center gap-2 px-5 pt-1">
               <h2 id={titleId} className="flex-1 text-lg font-extrabold tracking-tight">

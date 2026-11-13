@@ -55,8 +55,8 @@ export function EmptyState({
 }) {
   return (
     <div className={cn('flex flex-col items-center rounded-card bg-info px-6 py-8 text-center text-info-ink', className)}>
-      <span className="mb-3 flex size-14 items-center justify-center rounded-full bg-accent-soft shadow-glow">
-        <Icon size={26} strokeWidth={2} className="text-accent-light" />
+      <span className="mb-3 flex size-14 items-center justify-center rounded-full bg-white">
+        <Icon size={26} strokeWidth={2} className="text-accent" />
       </span>
       <p className="text-base font-bold">{title}</p>
       {children && <p className="mt-1 max-w-[30ch] text-sm">{children}</p>}
