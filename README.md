@@ -111,13 +111,15 @@ No subas tus respaldos a este repositorio.
 
 ## 7. Periodo del presupuesto (día de pago)
 
-Si no te pagan el día 1, en **Presupuesto** toca **Cambiar** debajo del mes:
+En **Presupuesto** toca **Cambiar** debajo del periodo. El periodo va de un pago hasta un día antes del siguiente:
 
-- **Normalmente me pagan el:** el día de pago habitual (por ejemplo, 10). El periodo va de ese día hasta un día antes del siguiente pago.
-- **El periodo empieza el:** si un mes te pagan otro día (por ejemplo, el 13), cambia la fecha solo para ese periodo.
+- **Me pagan:** Mensual (eliges el día, por ejemplo el 10), Quincenal (días 15 y último de cada mes) o Semanal (eliges el día de la semana).
+- **Este periodo empieza el:** si un pago cae otro día (por ejemplo, el 13 en vez del 10), cambia la fecha solo para ese periodo.
+- Los límites del presupuesto son **por periodo**: si cobras cada semana, pones cuánto gastar por semana.
+  Si cambias de mensual a semanal o quincenal, revisa tus montos.
 
 Inicio y Presupuesto usan ese periodo; Movimientos y Análisis siguen usando meses de calendario.
-Cada perfil tiene su propio día de pago.
+Cada perfil tiene su propia forma de pago.
 
 ## Cómo está hecha
 

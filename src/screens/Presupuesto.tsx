@@ -11,7 +11,7 @@ import { BudgetSheet, type BudgetTarget } from './BudgetSheet'
 import { PeriodSheet } from './PeriodSheet'
 import { usePayCycle } from '../db/db'
 import { useFinance } from '../hooks/useFinance'
-import { averageSpent, budgetFor, categoryBudgetLines, monthTotals, periodOf, periodRange, spentByCategory, totalBudget, type TotalBudget } from '../lib/budget'
+import { averageSpent, budgetFor, categoryBudgetLines, CYCLE_WORDS, freqOf, monthTotals, periodOf, periodRange, spentByCategory, totalBudget, type TotalBudget } from '../lib/budget'
 import { shortDate, todayISO } from '../lib/dates'
 import { cn } from '../lib/cn'
 
@@ -44,6 +44,7 @@ export function Presupuesto() {
       target={target}
       month={month}
       categories={categories}
+      cycle={cycle}
       current={(id) => budgetFor(budgets, id, month)}
       average={(id) => averageSpent(txs, id, month, 3, cycle)}
       onClose={() => setTarget(null)}
@@ -63,7 +64,7 @@ export function Presupuesto() {
         }
       />
       <div className="px-4">
-        <MonthSwitcher className="mb-1" month={month} now={now} onChange={setMonth} />
+        <MonthSwitcher className="mb-1" month={month} now={now} cycle={cycle} onChange={setMonth} />
         <button
           type="button"
           onClick={() => setPeriodOpen(true)}
@@ -86,14 +87,14 @@ export function Presupuesto() {
               </div>
             }
           >
-            Pon un límite mensual y te avisamos al llegar al 80% y si te pasas.
+            Pon un límite {CYCLE_WORDS[freqOf(cycle)].per} y te avisamos al llegar al 80% y si te pasas.
           </EmptyState>
         ) : (
           <>
             {total && <TotalCard total={total} isCurrent={month === now} onEdit={() => setTarget({ kind: 'total' })} />}
             {!total && (
               <Callout className="mb-5" action={<Button size="sm" onClick={() => setTarget({ kind: 'total' })}>Poner presupuesto total</Button>}>
-                Aún no tienes un presupuesto total para el mes.
+                Aún no tienes un presupuesto total para este periodo.
               </Callout>
             )}
 
@@ -153,7 +154,7 @@ export function Presupuesto() {
         )}
       </div>
       {sheet}
-      <PeriodSheet open={periodOpen} month={month} cycle={cycle} onClose={() => setPeriodOpen(false)} />
+      <PeriodSheet open={periodOpen} month={month} cycle={cycle} onSaved={setMonth} onClose={() => setPeriodOpen(false)} />
     </>
   )
 }

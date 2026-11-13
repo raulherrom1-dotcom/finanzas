@@ -7,18 +7,20 @@ import { CategoryChips } from '../components/CategoryChips'
 import { setBudget } from '../db/actions'
 import type { Category } from '../db/types'
 import { useApp } from '../state/app'
+import { CYCLE_WORDS, freqOf, periodTitle, type PayCycle } from '../lib/budget'
 import { monthLabel, type MonthKey } from '../lib/dates'
 import { useMoney } from '../components/ui/Amount'
 
 export type BudgetTarget = { kind: 'total' } | { kind: 'category'; category?: Category }
 
-/** Poner, cambiar o quitar un presupuesto mensual. */
+/** Poner, cambiar o quitar el presupuesto de cada periodo (mes, quincena o semana). */
 export function BudgetSheet({
   target,
   month,
   current,
   average,
   categories,
+  cycle,
   onClose,
 }: {
   target: BudgetTarget | null
@@ -26,6 +28,7 @@ export function BudgetSheet({
   current: (categoryId: string) => number | null
   average: (categoryId: string) => number
   categories: Category[]
+  cycle: PayCycle
   onClose: () => void
 }) {
   const title = !target ? '' : target.kind === 'total' ? 'Presupuesto total' : target.category ? `Presupuesto de ${target.category.name}` : 'Nuevo presupuesto'
@@ -39,6 +42,7 @@ export function BudgetSheet({
           current={current}
           average={average}
           categories={categories}
+          cycle={cycle}
           onClose={onClose}
         />
       )}
@@ -52,6 +56,7 @@ function BudgetForm({
   current,
   average,
   categories,
+  cycle,
   onClose,
 }: {
   target: BudgetTarget
@@ -59,8 +64,11 @@ function BudgetForm({
   current: (categoryId: string) => number | null
   average: (categoryId: string) => number
   categories: Category[]
+  cycle: PayCycle
   onClose: () => void
 }) {
+  const words = CYCLE_WORDS[freqOf(cycle)]
+  const fromLabel = freqOf(cycle) === 'monthly' ? monthLabel(month).toLowerCase() : `la ${periodTitle(cycle, month).toLowerCase()}`
   const { showToast } = useApp()
   const money = useMoney()
   const [categoryId, setCategoryId] = useState<string | undefined>(target.kind === 'total' ? 'total' : target.category?.id)
@@ -104,7 +112,7 @@ function BudgetForm({
 
       {categoryId && (
         <>
-          <Field label="Límite mensual" hint={`Aplica desde ${monthLabel(month).toLowerCase()} en adelante.`}>
+          <Field label={words.limit} hint={`Aplica desde ${fromLabel} en adelante.`}>
             {(id) => <MoneyInput key={inputKey} id={id} cents={amount} onChange={setAmount} />}
           </Field>
 
@@ -120,7 +128,7 @@ function BudgetForm({
             >
               <Sparkles size={20} className="shrink-0" />
               <span className="flex-1 text-sm">
-                En los últimos meses gastaste en promedio <strong>{money(avg)}</strong> al mes.
+                En {words.recent} gastaste en promedio <strong>{money(avg)}</strong> {words.per}.
                 <span className="mt-0.5 block font-bold">Usar {money(Math.ceil(avg / 10000) * 10000, { noCents: true })}</span>
               </span>
             </button>

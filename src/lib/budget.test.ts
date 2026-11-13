@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Account, Budget, Category, Transaction } from '../db/types'
-import { averageSpent, budgetFor, categoryBudgetLines, monthSavings, monthTotals, periodOf, periodRange, spentByCategory, totalBudget } from './budget'
+import { averageSpent, budgetFor, categoryBudgetLines, monthSavings, monthTotals, periodOf, periodRange, shiftPeriod, spentByCategory, totalBudget } from './budget'
 
 const b = (categoryId: string, amount: number, fromMonth: string): Budget => ({ id: `${categoryId}:${fromMonth}`, categoryId, amount, fromMonth })
 const t = (p: Partial<Transaction>): Transaction => ({ id: Math.random().toString(), type: 'expense', amount: 0, date: '2026-10-05', createdAt: 0, updatedAt: 0, ...p })
@@ -99,5 +99,37 @@ describe('periodo según día de pago', () => {
     const tb = totalBudget([b('total', 270000, '2026-11')], [], 0, '2026-11', '2026-11-14', c)!
     expect(tb.daysLeft).toBe(26)
     expect(Math.round(tb.elapsedPct)).toBe(7)
+  })
+})
+
+describe('periodo quincenal y semanal', () => {
+  const q = { frequency: 'biweekly' as const, payDay: 1, starts: {} }
+  it('quincenal: del 15 al penúltimo día y del último al 14', () => {
+    expect(periodOf(q, '2026-11-20')).toBe('2026-11-15')
+    expect(periodRange(q, '2026-11-15')).toEqual({ from: '2026-11-15', to: '2026-11-29' })
+    expect(periodOf(q, '2026-12-03')).toBe('2026-11-30')
+    expect(periodRange(q, '2026-11-30')).toEqual({ from: '2026-11-30', to: '2026-12-14' })
+    expect(periodOf(q, '2027-02-28')).toBe('2027-02-28')
+    expect(shiftPeriod(q, '2026-12-15', -1)).toBe('2026-11-30')
+    expect(shiftPeriod(q, '2026-11-30', -1)).toBe('2026-11-15')
+  })
+  it('quincenal con un pago movido', () => {
+    const c = { ...q, starts: { '2026-11-30': '2026-11-27' } }
+    expect(periodRange(c, '2026-11-15').to).toBe('2026-11-26')
+    expect(periodOf(c, '2026-11-28')).toBe('2026-11-30')
+  })
+  it('semanal: de viernes a jueves', () => {
+    const w = { frequency: 'weekly' as const, payDay: 1, weekday: 4, starts: {} }
+    expect(periodOf(w, '2026-11-12')).toBe('2026-11-06') // jueves → semana del viernes 6
+    expect(periodOf(w, '2026-11-13')).toBe('2026-11-13')
+    expect(periodRange(w, '2026-11-13')).toEqual({ from: '2026-11-13', to: '2026-11-19' })
+  })
+  it('promedio de las quincenas anteriores', () => {
+    const hist = [t({ amount: 30000, date: '2026-11-02' }), t({ amount: 10000, date: '2026-11-16' }), t({ amount: 999, date: '2026-12-01' })]
+    expect(averageSpent(hist, 'total', '2026-11-30', 3, q)).toBe(20000)
+  })
+  it('un presupuesto guardado por mes sigue aplicando en quincenas', () => {
+    expect(budgetFor([b('total', 500000, '2026-11')], 'total', '2026-11-15')).toBe(500000)
+    expect(budgetFor([b('total', 500000, '2026-11-15')], 'total', '2026-11')).toBeNull()
   })
 })

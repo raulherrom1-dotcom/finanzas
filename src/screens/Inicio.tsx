@@ -15,7 +15,7 @@ import { useFinance } from '../hooks/useFinance'
 import { useApp } from '../state/app'
 import { navigate } from '../lib/router'
 import { daysBetween, longDate, monthEnd, monthName, relativeDays, shortDate, todayISO } from '../lib/dates'
-import { monthSavings, monthTotals, periodOf, periodRange, totalBudget } from '../lib/budget'
+import { freqOf, monthSavings, monthTotals, periodOf, periodRange, totalBudget } from '../lib/budget'
 import { goalViews, nearestGoal } from '../lib/goals'
 import { upcomingPayments } from '../lib/upcoming'
 import { cn } from '../lib/cn'
@@ -30,7 +30,7 @@ export function Inicio() {
   const today = todayISO()
   const month = periodOf(cycle, today)
   const range = periodRange(cycle, month)
-  const periodName = range.from.endsWith('-01') && range.to === monthEnd(month) ? `de ${monthName(month)}` : `del ${shortDate(range.from)} al ${shortDate(range.to)}`
+  const periodName = freqOf(cycle) === 'monthly' && range.from.endsWith('-01') && range.to === monthEnd(month) ? `de ${monthName(month)}` : `del ${shortDate(range.from)} al ${shortDate(range.to)}`
 
   const totals = useMemo(() => monthTotals(txs, month, cycle), [txs, month, cycle])
   const savings = useMemo(() => monthSavings(txs, contributions, accounts, month, cycle), [txs, contributions, accounts, month, cycle])

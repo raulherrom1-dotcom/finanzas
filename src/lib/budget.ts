@@ -1,33 +1,84 @@
-import type { Account, Budget, Category, Cents, GoalContribution, Transaction } from '../db/types'
-import { addDays, addMonths, daysBetween, daysInMonth, makeISO, monthOf, todayISO, type ISODate, type MonthKey } from './dates'
+import type { Account, Budget, Category, Cents, Frequency, GoalContribution, Transaction } from '../db/types'
+import { addDays, addMonths, daysBetween, daysInMonth, makeISO, monthEnd, monthLabel, monthOf, shortDate, todayISO, weekday, type ISODate, type MonthKey } from './dates'
+import { nextOccurrence } from './recurrence'
 import { levelFor, type Level } from './levels'
 
 /**
  * Periodo del presupuesto: empieza el día de pago y termina un día antes del siguiente pago.
- * El periodo "2026-11" es el que empieza en noviembre. `starts` guarda los meses en que el pago cayó otro día.
+ * Cada periodo tiene una clave: 'AAAA-MM' en mensual (el que empieza ese mes) y la fecha de pago normal
+ * 'AAAA-MM-DD' en quincenal y semanal. Como las claves se ordenan igual que las fechas, los presupuestos
+ * guardados con un mes siguen aplicando si cambias a quincenal o semanal.
+ * `starts` guarda los periodos en que el pago cayó otro día.
  */
 export interface PayCycle {
+  /** Sin valor = mensual (ajustes guardados antes de que existiera). Quincenal = días 15 y último. */
+  frequency?: Frequency
+  /** Mensual: día del mes */
   payDay: number
-  starts: Record<MonthKey, ISODate>
+  /** Semanal: 0 = lunes … 6 = domingo */
+  weekday?: number
+  starts: Record<string, ISODate>
 }
 
-export const CALENDAR: PayCycle = { payDay: 1, starts: {} }
+export type PeriodKey = string
 
-export function periodStart(c: PayCycle, month: MonthKey): ISODate {
-  const [y, m] = month.split('-').map(Number)
-  return c.starts[month] ?? makeISO(y, m, Math.min(c.payDay, daysInMonth(y, m)))
+export const CALENDAR: PayCycle = { frequency: 'monthly', payDay: 1, starts: {} }
+export const DEFAULT_WEEKDAY = 4 // viernes
+
+export const freqOf = (c: PayCycle): Frequency => c.frequency ?? 'monthly'
+
+export const CYCLE_WORDS: Record<Frequency, { limit: string; per: string; recent: string }> = {
+  monthly: { limit: 'Límite mensual', per: 'al mes', recent: 'los últimos meses' },
+  biweekly: { limit: 'Límite por quincena', per: 'por quincena', recent: 'las últimas quincenas' },
+  weekly: { limit: 'Límite por semana', per: 'por semana', recent: 'las últimas semanas' },
 }
 
-export function periodRange(c: PayCycle, month: MonthKey): { from: ISODate; to: ISODate } {
-  return { from: periodStart(c, month), to: addDays(periodStart(c, addMonths(month, 1)), -1) }
+/** Fecha de inicio si el pago cae el día normal. */
+export function nominalStart(c: PayCycle, key: PeriodKey): ISODate {
+  if (freqOf(c) !== 'monthly') return key
+  const [y, m] = key.split('-').map(Number)
+  return makeISO(y, m, Math.min(c.payDay, daysInMonth(y, m)))
+}
+
+export function periodStart(c: PayCycle, key: PeriodKey): ISODate {
+  return c.starts[key] ?? nominalStart(c, key)
+}
+
+/** Periodo `n` lugares antes (negativo) o después (positivo). */
+export function shiftPeriod(c: PayCycle, key: PeriodKey, n: number): PeriodKey {
+  const f = freqOf(c)
+  if (f === 'monthly') return addMonths(key, n)
+  if (f === 'weekly') return addDays(key, 7 * n)
+  for (; n > 0; n--) key = nextOccurrence('biweekly', key, 15)
+  for (; n < 0; n++) key = key.endsWith('-15') ? monthEnd(addMonths(monthOf(key), -1)) : `${monthOf(key)}-15`
+  return key
+}
+
+export function periodRange(c: PayCycle, key: PeriodKey): { from: ISODate; to: ISODate } {
+  return { from: periodStart(c, key), to: addDays(periodStart(c, shiftPeriod(c, key, 1)), -1) }
+}
+
+function nominalKey(c: PayCycle, date: ISODate): PeriodKey {
+  const f = freqOf(c)
+  if (f === 'monthly') return monthOf(date)
+  if (f === 'weekly') return addDays(date, -((weekday(date) - (c.weekday ?? DEFAULT_WEEKDAY) + 7) % 7))
+  if (date === monthEnd(monthOf(date))) return date
+  return Number(date.slice(8, 10)) >= 15 ? `${monthOf(date)}-15` : monthEnd(addMonths(monthOf(date), -1))
 }
 
 /** El periodo al que pertenece una fecha. */
-export function periodOf(c: PayCycle, date: ISODate): MonthKey {
-  let m = monthOf(date)
-  while (date < periodStart(c, m)) m = addMonths(m, -1)
-  while (date >= periodStart(c, addMonths(m, 1))) m = addMonths(m, 1)
-  return m
+export function periodOf(c: PayCycle, date: ISODate): PeriodKey {
+  let k = nominalKey(c, date)
+  while (date < periodStart(c, k)) k = shiftPeriod(c, k, -1)
+  while (date >= periodStart(c, shiftPeriod(c, k, 1))) k = shiftPeriod(c, k, 1)
+  return k
+}
+
+/** "Noviembre 2026", "Quincena del 15 nov" o "Semana del 13 nov". */
+export function periodTitle(c: PayCycle, key: PeriodKey): string {
+  const f = freqOf(c)
+  if (f === 'monthly') return monthLabel(key)
+  return `${f === 'weekly' ? 'Semana' : 'Quincena'} del ${shortDate(periodStart(c, key))}`
 }
 
 const inPeriod = (date: ISODate, r: { from: ISODate; to: ISODate }) => date >= r.from && date <= r.to
@@ -154,7 +205,7 @@ export function totalBudget(
 /** Promedio mensual gastado en una categoría (o total) en los N meses anteriores al mes dado. */
 export function averageSpent(txs: Transaction[], categoryId: string | 'total', month: MonthKey, months = 3, cycle = CALENDAR): Cents {
   const from = new Set<string>()
-  for (let i = 1; i <= months; i++) from.add(addMonths(month, -i))
+  for (let i = 1; i <= months; i++) from.add(shiftPeriod(cycle, month, -i))
   let sum = 0
   const seen = new Set<string>()
   for (const t of txs) {
